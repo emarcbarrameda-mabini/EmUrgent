@@ -1,0 +1,380 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block main_class %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block full_content %}
+<div class="admin-layout">
+
+    <!-- Admin Sidebar -->
+    <aside class="admin-sidenav">
+        <div class="admin-sidenav-header">
+            <div class="admin-brand">
+                <div class="admin-brand-icon"><i class="fas fa-bullhorn"></i></div>
+                <div>
+                    <span class="admin-brand-title">i-Sumbong</span>
+                    <span class="admin-brand-sub">Admin Panel</span>
+                </div>
+            </div>
+        </div>
+
+        <nav class="admin-nav">
+            <a href="{% url 'admin_dashboard' %}" class="admin-nav-link active">
+                <i class="fas fa-gauge-high"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'home' %}" class="admin-nav-link">
+                <i class="fas fa-arrow-left"></i>
+                <span>Back to App</span>
+            </a>
+        </nav>
+
+        <div class="admin-sidenav-footer">
+            <div class="admin-user-info">
+                <div class="admin-avatar">{{ request.user.username|first|upper }}</div>
+                <div>
+                    <p class="admin-username">{{ request.user.username }}</p>
+                    <p class="admin-role">Administrator</p>
+                </div>
+            </div>
+            <a href="{% url 'logout' %}" class="admin-logout">
+                <i class="fas fa-right-from-bracket"></i>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="admin-main">
+
+        <!-- Top Bar -->
+        <div class="admin-topbar">
+            <div>
+                <h1 class="admin-page-title">Reports Dashboard</h1>
+                <p class="admin-page-sub">Manage and update all submitted community reports</p>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+        <div style="padding: 0 28px;">
+            {% for message in messages %}
+            <div class="admin-alert admin-alert-{{ message.tags }}">
+                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% else %}exclamation-circle{% endif %}"></i>
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Stats Cards -->
+        <div class="admin-stats">
+            <div class="admin-stat-card">
+                <div class="admin-stat-icon" style="background: #eff6ff; color: #2563eb;">
+                    <i class="fas fa-file-lines"></i>
+                </div>
+                <div>
+                    <span class="admin-stat-number">{{ total }}</span>
+                    <span class="admin-stat-label">Total Reports</span>
+                </div>
+            </div>
+            <div class="admin-stat-card">
+                <div class="admin-stat-icon" style="background: #fef9c3; color: #854d0e;">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div>
+                    <span class="admin-stat-number">{{ pending }}</span>
+                    <span class="admin-stat-label">Pending</span>
+                </div>
+            </div>
+            <div class="admin-stat-card">
+                <div class="admin-stat-icon" style="background: #dbeafe; color: #1e40af;">
+                    <i class="fas fa-spinner"></i>
+                </div>
+                <div>
+                    <span class="admin-stat-number">{{ in_progress }}</span>
+                    <span class="admin-stat-label">In Progress</span>
+                </div>
+            </div>
+            <div class="admin-stat-card">
+                <div class="admin-stat-icon" style="background: #dcfce7; color: #15803d;">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div>
+                    <span class="admin-stat-number">{{ resolved }}</span>
+                    <span class="admin-stat-label">Resolved</span>
+                </div>
+            </div>
+            <div class="admin-stat-card">
+                <div class="admin-stat-icon" style="background: #f3e8ff; color: #7e22ce;">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div>
+                    <span class="admin-stat-number">{{ total_users }}</span>
+                    <span class="admin-stat-label">Total Users</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters & Search -->
+        <div class="admin-filters-bar">
+            <form method="get" class="admin-filters-form">
+                <div class="admin-search-wrap">
+                    <i class="fas fa-search admin-search-icon"></i>
+                    <input type="text" name="q" placeholder="Search by title, location, or user..." 
+                           class="admin-search-input" value="{{ search_query }}">
+                </div>
+                <select name="status" class="admin-filter-select">
+                    <option value="">All Status</option>
+                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                    <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>In Progress</option>
+                    <option value="resolved" {% if status_filter == 'resolved' %}selected{% endif %}>Resolved</option>
+                </select>
+                <select name="priority" class="admin-filter-select">
+                    <option value="">All Priority</option>
+                    <option value="high" {% if priority_filter == 'high' %}selected{% endif %}>Urgent</option>
+                    <option value="medium" {% if priority_filter == 'medium' %}selected{% endif %}>Medium</option>
+                    <option value="low" {% if priority_filter == 'low' %}selected{% endif %}>Low</option>
+                </select>
+                <button type="submit" class="admin-filter-btn">
+                    <i class="fas fa-filter"></i> Filter
+                </button>
+                {% if status_filter or priority_filter or search_query %}
+                <a href="{% url 'admin_dashboard' %}" class="admin-clear-btn">
+                    <i class="fas fa-times"></i> Clear
+                </a>
+                {% endif %}
+            </form>
+            <span class="admin-results-count">{{ reports|length }} report{{ reports|length|pluralize }} found</span>
+        </div>
+
+        <!-- Reports Table -->
+        <div class="admin-table-wrap">
+            {% if reports %}
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Report</th>
+                        <th>Submitted By</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for report in reports %}
+                    <tr class="admin-table-row" id="row-{{ report.id }}">
+                        <td class="admin-id">{{ report.id }}</td>
+                        <td class="admin-report-cell">
+                            <p class="admin-report-title">{{ report.title }}</p>
+                            <p class="admin-report-location"><i class="fas fa-map-marker-alt"></i> {{ report.location }}</p>
+                        </td>
+                        <td>
+                            <div class="admin-user-cell">
+                                <div class="admin-mini-avatar">{{ report.user.username|first|upper }}</div>
+                                <span>{{ report.user.username }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            {% if report.priority == 'high' %}
+                            <span class="priority-badge priority-high"><i class="fas fa-exclamation-circle"></i> Urgent</span>
+                            {% elif report.priority == 'medium' %}
+                            <span class="priority-badge priority-medium"><i class="fas fa-minus-circle"></i> Medium</span>
+                            {% else %}
+                            <span class="priority-badge priority-low"><i class="fas fa-arrow-circle-down"></i> Low</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <!-- Inline status dropdown -->
+                            <form method="post" class="admin-status-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="update_status">
+                                <input type="hidden" name="report_id" value="{{ report.id }}">
+                                <select name="status" class="admin-status-select status-select-{{ report.status }}" onchange="this.form.submit()">
+                                    <option value="pending" {% if report.status == 'pending' %}selected{% endif %}>⏳ Pending</option>
+                                    <option value="in_progress" {% if report.status == 'in_progress' %}selected{% endif %}>🔄 In Progress</option>
+                                    <option value="resolved" {% if report.status == 'resolved' %}selected{% endif %}>✅ Resolved</option>
+                                </select>
+                            </form>
+                        </td>
+                        <td class="admin-date">{{ report.created_at|date:"M d, Y" }}<br><small>{{ report.created_at|timesince }} ago</small></td>
+                        <td>
+                            <div class="admin-actions">
+                                <button class="admin-btn-view"
+                                    data-id="{{ report.id }}"
+                                    data-title="{{ report.title|escapejs }}"
+                                    data-location="{{ report.location|escapejs }}"
+                                    data-description="{{ report.description|escapejs }}"
+                                    data-user="{{ report.user.username }}"
+                                    data-priority="{{ report.priority }}"
+                                    data-status="{{ report.status }}"
+                                    data-date="{{ report.created_at|date:'M d, Y' }}"
+                                    data-photo="{% if report.photo %}{{ report.photo.url }}{% endif %}"
+                                    title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="admin-btn-delete"
+                                    data-id="{{ report.id }}"
+                                    data-title="{{ report.title|escapejs }}"
+                                    title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="admin-empty">
+                <i class="fas fa-inbox"></i>
+                <p>No reports found{% if status_filter or priority_filter or search_query %} matching your filters{% endif %}.</p>
+                {% if status_filter or priority_filter or search_query %}
+                <a href="{% url 'admin_dashboard' %}" class="admin-clear-btn" style="margin-top: 10px; display: inline-flex;">Clear filters</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+    </div><!-- end admin-main -->
+</div><!-- end admin-layout -->
+
+<!-- VIEW REPORT MODAL -->
+<div class="modal-overlay" id="viewModal">
+    <div class="modal-box" style="max-width: 580px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-eye" style="margin-right: 8px; color: #2563eb;"></i>Report Details</h3>
+            <button class="modal-close" onclick="closeViewModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div style="padding: 20px 24px;">
+            <div class="admin-detail-grid">
+                <div class="admin-detail-row">
+                    <span class="admin-detail-label"><i class="fas fa-heading"></i> Title</span>
+                    <span class="admin-detail-value" id="viewTitle"></span>
+                </div>
+                <div class="admin-detail-row">
+                    <span class="admin-detail-label"><i class="fas fa-user"></i> Submitted By</span>
+                    <span class="admin-detail-value" id="viewUser"></span>
+                </div>
+                <div class="admin-detail-row">
+                    <span class="admin-detail-label"><i class="fas fa-map-marker-alt"></i> Location</span>
+                    <span class="admin-detail-value" id="viewLocation"></span>
+                </div>
+                <div class="admin-detail-row">
+                    <span class="admin-detail-label"><i class="fas fa-calendar"></i> Date</span>
+                    <span class="admin-detail-value" id="viewDate"></span>
+                </div>
+                <div class="admin-detail-row">
+                    <span class="admin-detail-label"><i class="fas fa-flag"></i> Priority</span>
+                    <span class="admin-detail-value" id="viewPriority"></span>
+                </div>
+                <div class="admin-detail-row">
+                    <span class="admin-detail-label"><i class="fas fa-circle-dot"></i> Status</span>
+                    <span class="admin-detail-value" id="viewStatus"></span>
+                </div>
+            </div>
+            <div style="margin-top: 14px;">
+                <span class="admin-detail-label" style="display: block; margin-bottom: 6px;"><i class="fas fa-align-left"></i> Description</span>
+                <p id="viewDescription" style="font-size: 14px; color: #475569; background: #f8fafc; padding: 14px; border-radius: 10px; line-height: 1.6; margin: 0;"></p>
+            </div>
+            <div id="viewPhotoWrap" style="margin-top: 14px; display: none;">
+                <span class="admin-detail-label" style="display: block; margin-bottom: 6px;"><i class="fas fa-image"></i> Photo</span>
+                <img id="viewPhoto" src="" style="width: 100%; border-radius: 10px; display: block;">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeViewModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- DELETE CONFIRM MODAL -->
+<div class="modal-overlay" id="adminDeleteModal">
+    <div class="modal-box modal-box-sm">
+        <div class="modal-header">
+            <h3><i class="fas fa-trash" style="margin-right: 8px; color: #dc2626;"></i>Delete Report</h3>
+            <button class="modal-close" onclick="closeAdminDeleteModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <p class="modal-desc">Are you sure you want to delete <strong id="adminDeleteTitle"></strong>? This cannot be undone.</p>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="delete_report">
+            <input type="hidden" name="report_id" id="adminDeleteId">
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeAdminDeleteModal()">Cancel</button>
+                <button type="submit" class="btn-danger"><i class="fas fa-trash" style="margin-right: 6px;"></i>Delete</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const statusLabels = { pending: '⏳ Pending', in_progress: '🔄 In Progress', resolved: '✅ Resolved' };
+const priorityLabels = { high: 'Urgent', medium: 'Medium', low: 'Low' };
+
+function openViewModal(btn) {
+    document.getElementById('viewTitle').textContent = btn.dataset.title;
+    document.getElementById('viewUser').textContent = btn.dataset.user;
+    document.getElementById('viewLocation').textContent = btn.dataset.location;
+    document.getElementById('viewDate').textContent = btn.dataset.date;
+    document.getElementById('viewDescription').textContent = btn.dataset.description;
+    document.getElementById('viewPriority').textContent = priorityLabels[btn.dataset.priority] || btn.dataset.priority;
+    document.getElementById('viewStatus').textContent = statusLabels[btn.dataset.status] || btn.dataset.status;
+    const photo = btn.dataset.photo;
+    const photoWrap = document.getElementById('viewPhotoWrap');
+    if (photo) {
+        document.getElementById('viewPhoto').src = photo;
+        photoWrap.style.display = 'block';
+    } else {
+        photoWrap.style.display = 'none';
+    }
+    document.getElementById('viewModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeViewModal() {
+    document.getElementById('viewModal').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+function openAdminDeleteModal(id, title) {
+    document.getElementById('adminDeleteId').value = id;
+    document.getElementById('adminDeleteTitle').textContent = '"' + title + '"';
+    document.getElementById('adminDeleteModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeAdminDeleteModal() {
+    document.getElementById('adminDeleteModal').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+// Event delegation
+document.addEventListener('click', function(e) {
+    const viewBtn = e.target.closest('.admin-btn-view');
+    if (viewBtn) { openViewModal(viewBtn); return; }
+
+    const delBtn = e.target.closest('.admin-btn-delete');
+    if (delBtn) { openAdminDeleteModal(delBtn.dataset.id, delBtn.dataset.title); return; }
+
+    const viewModal = document.getElementById('viewModal');
+    const delModal = document.getElementById('adminDeleteModal');
+    if (viewModal && e.target === viewModal) closeViewModal();
+    if (delModal && e.target === delModal) closeAdminDeleteModal();
+});
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closeViewModal(); closeAdminDeleteModal(); }
+});
+
+// Auto-dismiss alerts
+document.querySelectorAll('.admin-alert').forEach(a => {
+    setTimeout(() => { a.style.opacity = '0'; setTimeout(() => a.remove(), 400); }, 4000);
+});
+</script>
+{% endblock %}

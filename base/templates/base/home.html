@@ -1,0 +1,515 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block main_class %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block full_content %}
+<div class="dashboard-layout">
+
+    <!-- Side Navigation -->
+    <aside class="sidenav" id="sidenav">
+        <div class="sidenav-header">
+            <div class="sidenav-brand" onclick="expandIfCollapsed()" style="cursor:pointer;" title="Expand">
+                <i class="fas fa-bullhorn"></i>
+                <span>i-Sumbong</span>
+            </div>
+            <button class="sidenav-collapse-btn" onclick="collapseSidenav()" title="Collapse">
+                <i class="fas fa-chevron-right" id="collapseIcon"></i>
+            </button>
+            <button class="sidenav-close" id="sidenavClose">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <nav class="sidenav-links">
+            <a href="#" class="sidenav-link active" data-page="home">
+                <i class="fas fa-house"></i>
+                <span>Home</span>
+            </a>
+            <a href="#" class="sidenav-link" data-page="submit">
+                <i class="fas fa-plus-circle"></i>
+                <span>Report Issue</span>
+            </a>
+            <a href="#" class="sidenav-link" data-page="my-reports">
+                <i class="fas fa-file-alt"></i>
+                <span>My Reports</span>
+            </a>
+            <a href="#" class="sidenav-link" data-page="community">
+                <i class="fas fa-users"></i>
+                <span>Community Feed</span>
+            </a>
+            <a href="#" class="sidenav-link" data-page="notifications">
+                <div class="sidenav-notif-icon">
+                    <i class="fas fa-bell"></i>
+                    {% if unread_count > 0 %}
+                    <span class="sidenav-notif-badge">{{ unread_count }}</span>
+                    {% endif %}
+                </div>
+                <span>Notifications</span>
+            </a>
+            <a href="#" class="sidenav-link" data-page="profile">
+                <div class="sidenav-profile-avatar">{{ user.username|first|upper }}</div>
+                <span>{{ user.username }}</span>
+            </a>
+        </nav>
+
+        <div class="sidenav-footer">
+            <a href="{% url 'logout' %}" class="sidenav-logout">
+                <i class="fas fa-right-from-bracket"></i>
+                <span>Logout</span>
+            </a>
+            <a href="#" class="sidenav-link sidenav-settings" data-page="settings">
+                <i class="fas fa-gear"></i>
+                <span>Settings</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Overlay for mobile -->
+    <div class="sidenav-overlay" id="sidenavOverlay" onclick="toggleSidenav()"></div>
+
+    <!-- Main Content -->
+    <div class="dashboard-main">
+
+        <!-- Top Bar -->
+        <div class="topbar">
+            <button class="topbar-toggle" onclick="toggleSidenav()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h2 class="topbar-title" id="pageTitle">Home</h2>
+        </div>
+
+        <!-- HOME PAGE - News Feed -->
+        <div class="page-content active" id="page-home">
+            {% if messages %}
+            <div class="feed-wrapper" style="margin-bottom: 0;">
+                {% for message in messages %}
+                <div class="alert-success">
+                    <i class="fas fa-check-circle"></i> {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            <div class="feed-wrapper">
+                {% if community_reports %}
+                    {% for report in community_reports %}
+                    <div class="feed-card">
+                        <!-- Feed Header -->
+                        <div class="feed-card-header">
+                            <div class="feed-avatar">{{ report.user.username|first|upper }}</div>
+                            <div class="feed-meta">
+                                <p class="feed-username">{{ report.user.username }}</p>
+                                <p class="feed-time">
+                                    <i class="fas fa-map-marker-alt"></i> {{ report.location }}
+                                    &nbsp;·&nbsp;
+                                    <i class="fas fa-clock"></i> {{ report.created_at|timesince }} ago
+                                </p>
+                            </div>
+                            <div class="feed-badges">
+                                {% if report.priority == 'high' %}
+                                <span class="priority-badge priority-high"><i class="fas fa-exclamation-circle"></i> Urgent</span>
+                                {% elif report.priority == 'medium' %}
+                                <span class="priority-badge priority-medium"><i class="fas fa-minus-circle"></i> Medium</span>
+                                {% else %}
+                                <span class="priority-badge priority-low"><i class="fas fa-arrow-circle-down"></i> Low</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Feed Body -->
+                        <div class="feed-card-body">
+                            <h4 class="feed-title">{{ report.title }}</h4>
+                            <p class="feed-description">{{ report.description }}</p>
+                            {% if report.photo %}
+                            <div class="feed-image">
+                                <img src="{{ report.photo.url }}" alt="Report photo">
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Feed Footer -->
+                        <div class="feed-card-footer">
+                            <span class="status-badge status-{{ report.status }}">
+                                {% if report.status == 'pending' %}
+                                    <i class="fas fa-clock"></i>
+                                {% elif report.status == 'in_progress' %}
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                {% else %}
+                                    <i class="fas fa-check-circle"></i>
+                                {% endif %}
+                                {{ report.get_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state" style="background: white; border-radius: 16px; padding: 60px 20px;">
+                        <i class="fas fa-newspaper"></i>
+                        <p>No incident reports yet. Be the first!</p>
+                        <button onclick="showPage('submit')" class="btn-modern btn-login" style="width: auto; padding: 10px 24px; margin-top: 16px;">
+                            <i class="fas fa-plus" style="margin-right: 6px;"></i> Report Issue
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- MAG-SUMBONG PAGE -->
+        <div class="page-content" id="page-submit">
+            <div class="form-page-card">
+                <div class="form-page-header">
+                    <i class="fas fa-plus-circle" style="color: #2563eb; font-size: 28px;"></i>
+                    <h3>Report an Issue</h3>
+                    <p>Report a problem in your community</p>
+                </div>
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="submit_report">
+                    <input type="hidden" name="next_page" value="home">
+                    <div class="form-group">
+                        <label class="field-label">Report Title</label>
+                        <div class="input-field-wrapper">
+                            <i class="fas fa-heading input-icon"></i>
+                            <input type="text" name="title" class="form-input" placeholder="Example: Garbage at the corner of..." required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="field-label">Location</label>
+                        <div class="input-field-wrapper">
+                            <i class="fas fa-map-marker-alt input-icon"></i>
+                            <input type="text" name="location" class="form-input" placeholder="Enter the exact location..." required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="field-label">Priority Level</label>
+                        <div class="input-field-wrapper">
+                            <i class="fas fa-flag input-icon"></i>
+                            <select name="priority" class="form-input" required>
+                                <option value="" disabled selected>Select priority...</option>
+                                <option value="low">🟢 Low — Not very urgent</option>
+                                <option value="medium">🟡 Medium — Needs attention</option>
+                                <option value="high">🔴 High — Urgent!</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="field-label">Details</label>
+                        <div class="input-field-wrapper" style="align-items: flex-start;">
+                            <i class="fas fa-align-left input-icon" style="margin-top: 12px;"></i>
+                            <textarea name="description" class="form-input" rows="5" placeholder="Describe the problem in detail..." required style="resize: vertical;"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="field-label">Photo (Optional)</label>
+                        <div class="file-upload-wrapper" onclick="document.getElementById('photoInput').click()">
+                            <i class="fas fa-camera" style="font-size: 24px; color: #2563eb; margin-bottom: 6px;"></i>
+                            <p style="font-size: 13px; color: #64748b; margin: 0;">Click to upload a photo</p>
+                            <p style="font-size: 11px; color: #94a3b8; margin: 4px 0 0 0;" id="fileName">PNG, JPG up to 5MB</p>
+                            <input type="file" id="photoInput" name="photo" accept="image/*" style="display: none;" onchange="updateFileName(this)">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-modern btn-login" style="margin-top: 8px;">
+                        <i class="fas fa-paper-plane" style="margin-right: 6px;"></i> Submit Report
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- MY REPORTS PAGE -->
+        <div class="page-content" id="page-my-reports">
+            <div class="feed-wrapper">
+                {% if my_reports %}
+                    {% for report in my_reports %}
+                    <div class="report-card" id="report-card-{{ report.id }}">
+                        <!-- Status bar on top -->
+                        <div class="report-card-status status-bar-{{ report.status }}">
+                            {% if report.status == 'pending' %}
+                                <i class="fas fa-clock"></i> Pending
+                            {% elif report.status == 'in_progress' %}
+                                <i class="fas fa-spinner fa-spin"></i> In Progress
+                            {% else %}
+                                <i class="fas fa-check-circle"></i> Resolved
+                            {% endif %}
+                        </div>
+                        <!-- Card Body -->
+                        <div class="report-card-body">
+                            <div class="report-card-top">
+                                <div>
+                                    <h4 class="report-card-title">{{ report.title }}</h4>
+                                    <div class="report-card-meta">
+                                        <span><i class="fas fa-map-marker-alt"></i> {{ report.location }}</span>
+                                        <span><i class="fas fa-clock"></i> {{ report.created_at|timesince }} ago</span>
+                                    </div>
+                                </div>
+                                <div class="report-card-actions">
+                                    <button class="btn-edit"
+                                        data-id="{{ report.id }}"
+                                        data-title="{{ report.title|escapejs }}"
+                                        data-location="{{ report.location|escapejs }}"
+                                        data-priority="{{ report.priority }}"
+                                        data-description="{{ report.description|escapejs }}"
+                                        title="Edit">
+                                        <i class="fas fa-pen"></i>
+                                    </button>
+                                    <button class="btn-delete"
+                                        data-id="{{ report.id }}"
+                                        data-title="{{ report.title|escapejs }}"
+                                        title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <p class="report-card-desc">{{ report.description }}</p>
+                            {% if report.priority == 'high' %}
+                            <span class="priority-badge priority-high"><i class="fas fa-exclamation-circle"></i> Urgent</span>
+                            {% elif report.priority == 'medium' %}
+                            <span class="priority-badge priority-medium"><i class="fas fa-minus-circle"></i> Medium</span>
+                            {% else %}
+                            <span class="priority-badge priority-low"><i class="fas fa-arrow-circle-down"></i> Low</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state" style="background: white; border-radius: 16px; padding: 60px 20px;">
+                        <i class="fas fa-inbox"></i>
+                        <p>You have no reports yet. Report an issue!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- EDIT MODAL -->
+        <div class="modal-overlay" id="editModal">
+            <div class="modal-box">
+                <div class="modal-header">
+                    <h3><i class="fas fa-pen" style="margin-right: 8px; color: #2563eb;"></i>Edit Report</h3>
+                    <button class="modal-close" onclick="closeEditModal()"><i class="fas fa-times"></i></button>
+                </div>
+                <form method="post" id="editForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="edit_report">
+                    <input type="hidden" name="report_id" id="editReportId">
+                    <div class="form-group">
+                        <label class="field-label">Title</label>
+                        <input type="text" name="title" id="editTitle" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="field-label">Location</label>
+                        <input type="text" name="location" id="editLocation" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="field-label">Priority</label>
+                        <select name="priority" id="editPriority" class="form-input">
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">Urgent</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="field-label">Details</label>
+                        <textarea name="description" id="editDescription" class="form-input" rows="4" style="resize: vertical;"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-cancel" onclick="closeEditModal()">Cancel</button>
+                        <button type="submit" class="btn-modern btn-login" style="padding: 10px 24px;">
+                            <i class="fas fa-save" style="margin-right: 6px;"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- DELETE MODAL -->
+        <div class="modal-overlay" id="deleteModal">
+            <div class="modal-box modal-box-sm">
+                <div class="modal-header">
+                    <h3><i class="fas fa-trash" style="margin-right: 8px; color: #dc2626;"></i>Delete Report</h3>
+                    <button class="modal-close" onclick="closeDeleteModal()"><i class="fas fa-times"></i></button>
+                </div>
+                <p class="modal-desc">Are you sure you want to delete <strong id="deleteReportTitle"></strong>? This cannot be undone.</p>
+                <form method="post" id="deleteForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="delete_report">
+                    <input type="hidden" name="report_id" id="deleteReportId">
+                    <div class="modal-footer">
+                        <button type="button" class="btn-cancel" onclick="closeDeleteModal()">Cancel</button>
+                        <button type="submit" class="btn-danger">
+                            <i class="fas fa-trash" style="margin-right: 6px;"></i> Delete
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- COMMUNITY FEED PAGE -->
+        <div class="page-content" id="page-community">
+            <div class="feed-wrapper">
+                {% if community_reports %}
+                    {% for report in community_reports %}
+                    <div class="feed-card">
+                        <div class="feed-card-header">
+                            <div class="feed-avatar">{{ report.user.username|first|upper }}</div>
+                            <div class="feed-meta">
+                                <p class="feed-username">{{ report.user.username }}</p>
+                                <p class="feed-time">
+                                    <i class="fas fa-map-marker-alt"></i> {{ report.location }}
+                                    &nbsp;·&nbsp;
+                                    <i class="fas fa-clock"></i> {{ report.created_at|timesince }} ago
+                                </p>
+                            </div>
+                            <div class="feed-badges">
+                                {% if report.priority == 'high' %}
+                                <span class="priority-badge priority-high"><i class="fas fa-exclamation-circle"></i> Urgent</span>
+                                {% elif report.priority == 'medium' %}
+                                <span class="priority-badge priority-medium"><i class="fas fa-minus-circle"></i> Medium</span>
+                                {% else %}
+                                <span class="priority-badge priority-low"><i class="fas fa-arrow-circle-down"></i> Low</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="feed-card-body">
+                            <h4 class="feed-title">{{ report.title }}</h4>
+                            <p class="feed-description">{{ report.description }}</p>
+                            {% if report.photo %}
+                            <div class="feed-image">
+                                <img src="{{ report.photo.url }}" alt="Report photo">
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="feed-card-footer">
+                            <span class="status-badge status-{{ report.status }}">
+                                {% if report.status == 'pending' %}
+                                    <i class="fas fa-clock"></i>
+                                {% elif report.status == 'in_progress' %}
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                {% else %}
+                                    <i class="fas fa-check-circle"></i>
+                                {% endif %}
+                                {{ report.get_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state" style="background: white; border-radius: 16px; padding: 60px 20px;">
+                        <i class="fas fa-comments"></i>
+                        <p>No reports in the community yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- NOTIFICATIONS PAGE -->
+        <div class="page-content" id="page-notifications">
+            <div class="form-page-card" style="max-width: 680px;">
+                <div class="notif-panel-header" style="padding: 0 0 14px 0; margin-bottom: 4px;">
+                    <span style="font-size: 16px; font-weight: 700; color: #1e293b;">Notifications</span>
+                    {% if unread_count > 0 %}
+                    <button class="notif-mark-read" onclick="markAllRead()">Mark all as read</button>
+                    {% endif %}
+                </div>
+                <div class="notif-list" style="max-height: none;">
+                    {% if notifications %}
+                        {% for notif in notifications %}
+                        <div class="notif-item {% if not notif.is_read %}unread{% endif %}">
+                            <div class="notif-icon
+                                {% if notif.notif_type == 'resolved' %}notif-icon-resolved
+                                {% elif notif.notif_type == 'status_changed' %}notif-icon-status
+                                {% else %}notif-icon-submitted{% endif %}">
+                                {% if notif.notif_type == 'resolved' %}
+                                    <i class="fas fa-check-circle"></i>
+                                {% elif notif.notif_type == 'status_changed' %}
+                                    <i class="fas fa-rotate"></i>
+                                {% else %}
+                                    <i class="fas fa-paper-plane"></i>
+                                {% endif %}
+                            </div>
+                            <div class="notif-content">
+                                <p class="notif-message">{{ notif.message }}</p>
+                                <p class="notif-time">{{ notif.created_at|timesince }} ago</p>
+                            </div>
+                            {% if not notif.is_read %}
+                            <span class="notif-dot"></span>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="notif-empty">
+                            <i class="fas fa-bell-slash"></i>
+                            <p>No notifications yet</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- PROFILE PAGE -->
+        <div class="page-content" id="page-profile">
+            <div class="form-page-card">
+                <div class="form-page-header">
+                    <i class="fas fa-user-circle" style="color: #2563eb; font-size: 28px;"></i>
+                    <h3>Profile</h3>
+                    <p>Your information</p>
+                </div>
+                <div class="profile-avatar-large">{{ user.username|first|upper }}</div>
+                <div class="profile-details">
+                    <div class="profile-row">
+                        <span class="profile-label"><i class="fas fa-user"></i> Username</span>
+                        <span class="profile-value">{{ user.username }}</span>
+                    </div>
+                    <div class="profile-row">
+                        <span class="profile-label"><i class="fas fa-envelope"></i> Email</span>
+                        <span class="profile-value">{{ user.email|default:"Not set" }}</span>
+                    </div>
+                    <div class="profile-row">
+                        <span class="profile-label"><i class="fas fa-calendar"></i> Joined</span>
+                        <span class="profile-value">{{ user.date_joined|date:"M d, Y" }}</span>
+                    </div>
+                    <div class="profile-row">
+                        <span class="profile-label"><i class="fas fa-file-alt"></i> Total Reports</span>
+                        <span class="profile-value">{{ my_reports_count|default:"0" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SETTINGS PAGE -->
+        <div class="page-content" id="page-settings">
+            <div class="form-page-card">
+                <div class="form-page-header">
+                    <i class="fas fa-gear" style="color: #2563eb; font-size: 28px;"></i>
+                    <h3>Settings</h3>
+                    <p>Manage your account</p>
+                </div>
+                <div class="settings-list">
+                    <div class="settings-item">
+                        <div>
+                            <p class="settings-title">Change Password</p>
+                            <p class="settings-sub">Update your password for security</p>
+                        </div>
+                        <a href="{% url 'password_reset' %}" class="btn-modern btn-login" style="width: auto; padding: 8px 16px; font-size: 13px;">
+                            Change
+                        </a>
+                    </div>
+                    <div class="settings-item">
+                        <div>
+                            <p class="settings-title">Logout</p>
+                            <p class="settings-sub">Sign out of your account</p>
+                        </div>
+                        <a href="{% url 'logout' %}" class="btn-modern" style="width: auto; padding: 8px 16px; font-size: 13px; background: #dc2626;">
+                            Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'base/script.js' %}"></script>
+{% endblock %}
