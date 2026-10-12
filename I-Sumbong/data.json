@@ -1,0 +1,1642 @@
+[
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$870000$i6j7taasJokusoPvgzEWfW$HTL7cvlBgCZKh990Neadw2domWigJ2+d4RcbLkWL+GM=",
+    "last_login": "2026-05-07T06:09:07.621Z",
+    "is_superuser": true,
+    "username": "admin",
+    "first_name": "",
+    "last_name": "",
+    "email": "admin@sample.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-03-05T14:02:28.051Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$870000$sd8PEXs2OCcikLb1XokArP$2q29NIMuEfFMjYpzr0rc94KLw7dOKT27SzYunxiGHI0=",
+    "last_login": "2026-04-30T08:56:18.176Z",
+    "is_superuser": false,
+    "username": "user@gmail.com",
+    "first_name": "",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-03-12T15:15:26.858Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$870000$KFyJ7pQnKkl4B5GOQO8Mj8$Tu1qrQoc49V7z2eUp9636WoLF0N2PQRpuHAS3re2Guw=",
+    "last_login": "2026-03-17T07:54:08.236Z",
+    "is_superuser": false,
+    "username": "nvmyvs",
+    "first_name": "",
+    "last_name": "",
+    "email": "sample@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-03-13T03:06:42.571Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$870000$pjhr1nNuUiVkeX03bN9nVq$ZBEbLScWnolYIeWncLeBYQ/1RDdPma2YGS4YN5h+/fI=",
+    "last_login": "2026-03-17T07:57:32.136Z",
+    "is_superuser": true,
+    "username": "admin1",
+    "first_name": "",
+    "last_name": "",
+    "email": "admin1@sample.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-03-13T03:13:29.463Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$870000$w0b1rhR23r46S0WdSN4vn2$L0DHFfVPol8/GcD4rD6FI0HiX/P3As4/KYulMQYSMRc=",
+    "last_login": "2026-03-13T06:22:17.992Z",
+    "is_superuser": false,
+    "username": "mark",
+    "first_name": "",
+    "last_name": "",
+    "email": "mark@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-03-13T06:22:03.153Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$870000$MREWvP78TZcbrV4NqC6zvl$JJiFPRpRdQHp+MHJzaiNTxf6vQV2Y9LlFpKY/m2ZrbM=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "test_admin_ci",
+    "first_name": "",
+    "last_name": "",
+    "email": "admin@example.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-04-28T22:49:07.858Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$870000$HWvQeaEo7xsi8sOhp9rKtr$ONNPPNxLrZh6znLnPQO4WzXY7Fg11I8hJuIc7bsgVzg=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "test_user_ci",
+    "first_name": "",
+    "last_name": "",
+    "email": "user@example.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-28T22:49:09.054Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$870000$3vXZQAuxcYRDJozlRQW8Sx$9eo8A1s1otc6qLqVwtLqVuKvqFZGdpnZRz3V1EIA4r0=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "promote_test_user",
+    "first_name": "",
+    "last_name": "",
+    "email": "promote@example.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-04-28T23:02:20.687Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$870000$2AHJ24muY1CRQrZfAqOkkQ$+uTiz3MOpXbxmyVTXnQjNyPn5vfdB4hskmQmz3K2JSU=",
+    "last_login": "2026-04-29T09:33:57.967Z",
+    "is_superuser": true,
+    "username": "bebe",
+    "first_name": "",
+    "last_name": "",
+    "email": "brixbriongos14@gmail.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-04-29T05:21:12.585Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$QbkbuEwru3ry6a59Ucxh2N$kSU0nUGB8w7srgIk3L3lm5fEovKseB2UiG4+QpUq+jE=",
+    "last_login": "2026-10-02T23:52:37.185Z",
+    "is_superuser": false,
+    "username": "Brix",
+    "first_name": "",
+    "last_name": "",
+    "email": "brixbriongos@mabinicolleges.edu.ph",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-29T06:08:02.140Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$600000$mgeHTh4pjjcVxVw8UKRURm$Z6ibiJga6WLtZJ7T0cHOTj3+8FHO9squ9BR6f013rR8=",
+    "last_login": "2026-05-01T03:28:43.224Z",
+    "is_superuser": true,
+    "username": "bebeq",
+    "first_name": "",
+    "last_name": "",
+    "email": "gendranoshennamae@gmail.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-04-29T06:16:06.695Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$GUOcR4YptmKDVpXnScCnMW$ed7FMN2FBmduSKvWKFAGAWxd5phIlnt149D7iy0pve4=",
+    "last_login": "2026-10-02T23:48:55.407Z",
+    "is_superuser": false,
+    "username": "emarcb",
+    "first_name": "",
+    "last_name": "",
+    "email": "emarcbarrameda@gmail.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-04-30T05:11:21.184Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$600000$4GQq9U5lsE5cO5eQhJo2bR$D2dA693JcEp/WZLIPlmRPUckRjmAxI06Fo+FRttfFjE=",
+    "last_login": "2026-05-05T05:12:48.964Z",
+    "is_superuser": false,
+    "username": "michael",
+    "first_name": "",
+    "last_name": "",
+    "email": "scabardrt560@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-05-01T03:33:32.957Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$600000$ao5N5UMBgY0u80k8fYHkr2$XpTxUKxWXaN3dSL1DP2mgeROx8WLeUUWquhc30bPYwM=",
+    "last_login": "2026-05-01T03:54:26.371Z",
+    "is_superuser": false,
+    "username": "testuser123",
+    "first_name": "",
+    "last_name": "",
+    "email": "testemail123@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-05-01T03:54:17.283Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$mMsumBm3JxgwPMxLLx01pY$Fq9fH8Jug7GhF+XuoSMQbVSz3hgoD7dKy4Zl+T5UD/E=",
+    "last_login": "2026-09-30T05:52:19.689Z",
+    "is_superuser": false,
+    "username": "emarc23",
+    "first_name": "",
+    "last_name": "",
+    "email": "barramedaem46@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-09-30T05:52:04.662Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$wY6salboKQqqHLdtA8b1mA$uaJjhW6lMjzFXoUtpMFBgE786CJaejx6M+0IQc+68sc=",
+    "last_login": "2026-09-30T07:37:23.109Z",
+    "is_superuser": true,
+    "username": "admin123",
+    "first_name": "",
+    "last_name": "",
+    "email": "",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-09-30T07:35:03.074Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$Jn4bKd5ILmkn4uhWz8VBjf$OTGOo0JuILwewU3OV6k5vT2bgyOGLkJWmFEbRgwaUXA=",
+    "last_login": "2026-09-30T19:29:32.578Z",
+    "is_superuser": false,
+    "username": "test1",
+    "first_name": "",
+    "last_name": "",
+    "email": "test1@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-09-30T07:40:50.433Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "base.report",
+  "pk": 9,
+  "fields": {
+    "user": [
+      "Brix"
+    ],
+    "title": "'o'o'",
+    "location": "Labo, Camarines Norte, Bicol Region, PHL",
+    "latitude": null,
+    "longitude": null,
+    "priority": "low",
+    "description": "l\r\n[op\r\n[p\r\np",
+    "photo": "",
+    "status": "resolved",
+    "assigned_to": [
+      "bebeq"
+    ],
+    "is_deleted": false,
+    "deleted_at": null,
+    "created_at": "2026-04-29T16:56:49.473Z",
+    "updated_at": "2026-04-29T21:19:13.605Z",
+    "resolved_at": null
+  }
+},
+{
+  "model": "base.report",
+  "pk": 10,
+  "fields": {
+    "user": [
+      "Brix"
+    ],
+    "title": "efwefwe",
+    "location": "fwefwe",
+    "latitude": null,
+    "longitude": null,
+    "priority": "low",
+    "description": "qfqfqacasvvv",
+    "photo": "",
+    "status": "resolved",
+    "assigned_to": null,
+    "is_deleted": false,
+    "deleted_at": null,
+    "created_at": "2026-04-29T21:19:55.215Z",
+    "updated_at": "2026-04-30T04:06:47.555Z",
+    "resolved_at": null
+  }
+},
+{
+  "model": "base.report",
+  "pk": 13,
+  "fields": {
+    "user": [
+      "Brix"
+    ],
+    "title": "report title",
+    "location": "14.113466, 122.959927",
+    "latitude": 14.113466212748715,
+    "longitude": 122.95992695431386,
+    "priority": "medium",
+    "description": "details of an accident",
+    "photo": "",
+    "status": "resolved",
+    "assigned_to": null,
+    "is_deleted": false,
+    "deleted_at": null,
+    "created_at": "2026-04-30T09:14:38.794Z",
+    "updated_at": "2026-04-30T10:03:52.160Z",
+    "resolved_at": null
+  }
+},
+{
+  "model": "base.report",
+  "pk": 14,
+  "fields": {
+    "user": [
+      "Brix"
+    ],
+    "title": "12341",
+    "location": "14.107970, 122.953468",
+    "latitude": 14.10797,
+    "longitude": 122.9534685,
+    "priority": "low",
+    "description": "123",
+    "photo": "",
+    "status": "pending",
+    "assigned_to": null,
+    "is_deleted": false,
+    "deleted_at": null,
+    "created_at": "2026-05-01T03:27:25.717Z",
+    "updated_at": "2026-05-01T03:27:25.717Z",
+    "resolved_at": null
+  }
+},
+{
+  "model": "base.report",
+  "pk": 15,
+  "fields": {
+    "user": [
+      "michael"
+    ],
+    "title": "testreport1",
+    "location": "14.107970, 122.953468",
+    "latitude": 14.10797,
+    "longitude": 122.9534685,
+    "priority": "low",
+    "description": "test Incident 1",
+    "photo": "",
+    "status": "pending",
+    "assigned_to": null,
+    "is_deleted": false,
+    "deleted_at": null,
+    "created_at": "2026-05-01T03:36:12.850Z",
+    "updated_at": "2026-05-01T03:36:12.850Z",
+    "resolved_at": null
+  }
+},
+{
+  "model": "base.report",
+  "pk": 16,
+  "fields": {
+    "user": [
+      "Brix"
+    ],
+    "title": "basura",
+    "location": "14.110813, 122.962336",
+    "latitude": 14.110813,
+    "longitude": 122.962336,
+    "priority": "medium",
+    "description": "paki linis ang basura",
+    "photo": "",
+    "status": "pending",
+    "assigned_to": null,
+    "is_deleted": false,
+    "deleted_at": null,
+    "created_at": "2026-09-30T07:49:36.187Z",
+    "updated_at": "2026-09-30T07:49:36.187Z",
+    "resolved_at": null
+  }
+},
+{
+  "model": "base.report",
+  "pk": 17,
+  "fields": {
+    "user": [
+      "Brix"
+    ],
+    "title": "car accident",
+    "location": "Labo - Panganiban Road, North Poblacion, Santa Rosa Sur, Capacuan, Camarines Norte, Bicol Region, 4606, Philippines",
+    "latitude": 14.2573075,
+    "longitude": 122.72918699999998,
+    "priority": "high",
+    "description": "sqswswswswsws",
+    "photo": "",
+    "status": "pending",
+    "assigned_to": null,
+    "is_deleted": false,
+    "deleted_at": null,
+    "created_at": "2026-09-30T13:38:26.728Z",
+    "updated_at": "2026-09-30T13:38:26.728Z",
+    "resolved_at": null
+  }
+},
+{
+  "model": "base.report",
+  "pk": 18,
+  "fields": {
+    "user": [
+      "Brix"
+    ],
+    "title": "uytuyt",
+    "location": "Labo - Panganiban Road, North Poblacion, Santa Rosa Sur, Capacuan, Camarines Norte, Bicol Region, 4606, Philippines",
+    "latitude": 14.257446,
+    "longitude": 122.728947,
+    "priority": "low",
+    "description": "kjkjhkh",
+    "photo": "",
+    "status": "in_progress",
+    "assigned_to": null,
+    "is_deleted": false,
+    "deleted_at": null,
+    "created_at": "2026-09-30T13:44:38.274Z",
+    "updated_at": "2026-09-30T19:28:32.538Z",
+    "resolved_at": null
+  }
+},
+{
+  "model": "base.report",
+  "pk": 19,
+  "fields": {
+    "user": [
+      "test1"
+    ],
+    "title": "kjkjhkjh",
+    "location": "Labo - Panganiban Road, North Poblacion, Santa Rosa Sur, Camarines Norte, Bicol Region, 4606, Philippines",
+    "latitude": 14.257446,
+    "longitude": 122.728947,
+    "priority": "high",
+    "description": "kkjhkjh",
+    "photo": "",
+    "status": "resolved",
+    "assigned_to": null,
+    "is_deleted": false,
+    "deleted_at": null,
+    "created_at": "2026-09-30T19:26:42.122Z",
+    "updated_at": "2026-09-30T19:29:24.663Z",
+    "resolved_at": "2026-09-30T19:29:24.648Z"
+  }
+},
+{
+  "model": "base.report",
+  "pk": 20,
+  "fields": {
+    "user": [
+      "Brix"
+    ],
+    "title": "dfghjkl",
+    "location": "Cobangbang-San Isidro NIA Road, Barangay Ⅱ, Moreno, Daet, Camarines Norte, Bicol Region, 4600, Philippines",
+    "latitude": 14.110834670788192,
+    "longitude": 122.96235518036582,
+    "priority": "high",
+    "description": "iuyjhghjhkghhghjkfghjk",
+    "photo": "",
+    "status": "pending",
+    "assigned_to": null,
+    "is_deleted": false,
+    "deleted_at": null,
+    "created_at": "2026-10-02T07:15:53.908Z",
+    "updated_at": "2026-10-02T07:15:53.908Z",
+    "resolved_at": null
+  }
+},
+{
+  "model": "base.report",
+  "pk": 21,
+  "fields": {
+    "user": [
+      "Brix"
+    ],
+    "title": "ksksksks",
+    "location": "14.257307, 122.729187",
+    "latitude": 14.2573075,
+    "longitude": 122.72918699999998,
+    "priority": "medium",
+    "description": "356653",
+    "photo": "",
+    "status": "pending",
+    "assigned_to": null,
+    "is_deleted": false,
+    "deleted_at": null,
+    "created_at": "2026-10-02T23:51:30.305Z",
+    "updated_at": "2026-10-02T23:51:30.305Z",
+    "resolved_at": null
+  }
+},
+{
+  "model": "base.notification",
+  "pk": 18,
+  "fields": {
+    "user": [
+      "Brix"
+    ],
+    "report": 9,
+    "notif_type": "report_submitted",
+    "message": "Your report \"'o'o'\" has been submitted successfully.",
+    "is_read": true,
+    "delivery_status": "pending",
+    "delivery_attempts": 0,
+    "last_attempt_at": null,
+    "last_error": "",
+    "created_at": "2026-04-29T16:56:49.694Z"
+  }
+},
+{
+  "model": "base.notification",
+  "pk": 19,
+  "fields": {
+    "user": [
+      "Brix"
+    ],
+    "report": 9,
+    "notif_type": "resolved",
+    "message": "Your report \"'o'o'\" has been marked as Resolved. Thank you!",
+    "is_read": true,
+    "delivery_status": "pending",
+    "delivery_attempts": 0,
+    "last_attempt_at": null,
+    "last_error": "",
+    "created_at": "2026-04-29T21:18:19.425Z"
+  }
+},
+{
+  "model": "base.notification",
+  "pk": 20,
+  "fields": {
+    "user": [
+      "Brix"
+    ],
+    "report": 9,
+    "notif_type": "admin_action",
+    "message": "Barangay update: Resolved. Notes: fgfgehe4t",
+    "is_read": true,
+    "delivery_status": "pending",
+    "delivery_attempts": 0,
+    "last_attempt_at": null,
+    "last_error": "",
+    "created_at": "2026-04-29T21:19:14.086Z"
+  }
+},
+{
+  "model": "base.notification",
+  "pk": 28,
+  "fields": {
+    "user": [
+      "Brix"
+    ],
+    "report": 13,
+    "notif_type": "report_submitted",
+    "message": "Your report \"report title\" has been submitted successfully.",
+    "is_read": true,
+    "delivery_status": "sent",
+    "delivery_attempts": 1,
+    "last_attempt_at": "2026-04-30T09:14:38.819Z",
+    "last_error": "",
+    "created_at": "2026-04-30T09:14:38.802Z"
+  }
+},
+{
+  "model": "base.notification",
+  "pk": 29,
+  "fields": {
+    "user": [
+      "Brix"
+    ],
+    "report": 13,
+    "notif_type": "admin_action",
+    "message": "Barangay update: Acknowledged. Notes: we acknowledge your post expect our team to help you out in that situation. :)",
+    "is_read": true,
+    "delivery_status": "sent",
+    "delivery_attempts": 1,
+    "last_attempt_at": "2026-04-30T09:20:39.300Z",
+    "last_error": "",
+    "created_at": "2026-04-30T09:20:39.291Z"
+  }
+},
+{
+  "model": "base.notification",
+  "pk": 30,
+  "fields": {
+    "user": [
+      "Brix"
+    ],
+    "report": 13,
+    "notif_type": "resolved",
+    "message": "Your report \"report title\" has been marked as Resolved. Thank you!",
+    "is_read": true,
+    "delivery_status": "sent",
+    "delivery_attempts": 2,
+    "last_attempt_at": "2026-04-30T10:03:52.331Z",
+    "last_error": "",
+    "created_at": "2026-04-30T09:20:59.800Z"
+  }
+},
+{
+  "model": "base.notification",
+  "pk": 31,
+  "fields": {
+    "user": [
+      "Brix"
+    ],
+    "report": 14,
+    "notif_type": "report_submitted",
+    "message": "Your report \"12341\" has been submitted successfully.",
+    "is_read": true,
+    "delivery_status": "sent",
+    "delivery_attempts": 1,
+    "last_attempt_at": "2026-05-01T03:27:25.743Z",
+    "last_error": "",
+    "created_at": "2026-05-01T03:27:25.724Z"
+  }
+},
+{
+  "model": "base.notification",
+  "pk": 32,
+  "fields": {
+    "user": [
+      "michael"
+    ],
+    "report": 15,
+    "notif_type": "report_submitted",
+    "message": "Your report \"testreport1\" has been submitted successfully.",
+    "is_read": true,
+    "delivery_status": "sent",
+    "delivery_attempts": 1,
+    "last_attempt_at": "2026-05-01T03:36:12.862Z",
+    "last_error": "",
+    "created_at": "2026-05-01T03:36:12.856Z"
+  }
+},
+{
+  "model": "base.notification",
+  "pk": 33,
+  "fields": {
+    "user": [
+      "Brix"
+    ],
+    "report": 14,
+    "notif_type": "admin_action",
+    "message": "michael commented on your report \"12341\": heeee",
+    "is_read": true,
+    "delivery_status": "sent",
+    "delivery_attempts": 1,
+    "last_attempt_at": "2026-05-05T05:17:18.885Z",
+    "last_error": "",
+    "created_at": "2026-05-05T05:17:18.859Z"
+  }
+},
+{
+  "model": "base.notification",
+  "pk": 34,
+  "fields": {
+    "user": [
+      "Brix"
+    ],
+    "report": 16,
+    "notif_type": "report_submitted",
+    "message": "Your report \"basura\" has been submitted successfully.",
+    "is_read": true,
+    "delivery_status": "sent",
+    "delivery_attempts": 1,
+    "last_attempt_at": "2026-09-30T07:49:36.238Z",
+    "last_error": "",
+    "created_at": "2026-09-30T07:49:36.195Z"
+  }
+},
+{
+  "model": "base.notification",
+  "pk": 35,
+  "fields": {
+    "user": [
+      "Brix"
+    ],
+    "report": 17,
+    "notif_type": "report_submitted",
+    "message": "Your report \"car accident\" has been submitted successfully.",
+    "is_read": true,
+    "delivery_status": "sent",
+    "delivery_attempts": 1,
+    "last_attempt_at": "2026-09-30T13:38:26.778Z",
+    "last_error": "",
+    "created_at": "2026-09-30T13:38:26.735Z"
+  }
+},
+{
+  "model": "base.notification",
+  "pk": 36,
+  "fields": {
+    "user": [
+      "Brix"
+    ],
+    "report": 18,
+    "notif_type": "report_submitted",
+    "message": "Your report \"uytuyt\" has been submitted successfully.",
+    "is_read": true,
+    "delivery_status": "sent",
+    "delivery_attempts": 1,
+    "last_attempt_at": "2026-09-30T13:44:38.289Z",
+    "last_error": "",
+    "created_at": "2026-09-30T13:44:38.279Z"
+  }
+},
+{
+  "model": "base.notification",
+  "pk": 37,
+  "fields": {
+    "user": [
+      "test1"
+    ],
+    "report": 19,
+    "notif_type": "report_submitted",
+    "message": "Your report \"kjkjhkjh\" has been submitted successfully.",
+    "is_read": false,
+    "delivery_status": "sent",
+    "delivery_attempts": 1,
+    "last_attempt_at": "2026-09-30T19:26:42.154Z",
+    "last_error": "",
+    "created_at": "2026-09-30T19:26:42.132Z"
+  }
+},
+{
+  "model": "base.notification",
+  "pk": 38,
+  "fields": {
+    "user": [
+      "test1"
+    ],
+    "report": 19,
+    "notif_type": "status_changed",
+    "message": "Your report \"kjkjhkjh\" is now In Progress.",
+    "is_read": false,
+    "delivery_status": "sent",
+    "delivery_attempts": 1,
+    "last_attempt_at": "2026-09-30T19:28:19.130Z",
+    "last_error": "",
+    "created_at": "2026-09-30T19:28:19.122Z"
+  }
+},
+{
+  "model": "base.notification",
+  "pk": 39,
+  "fields": {
+    "user": [
+      "Brix"
+    ],
+    "report": 18,
+    "notif_type": "status_changed",
+    "message": "Your report \"uytuyt\" is now In Progress.",
+    "is_read": false,
+    "delivery_status": "sent",
+    "delivery_attempts": 1,
+    "last_attempt_at": "2026-09-30T19:28:32.533Z",
+    "last_error": "",
+    "created_at": "2026-09-30T19:28:32.519Z"
+  }
+},
+{
+  "model": "base.notification",
+  "pk": 40,
+  "fields": {
+    "user": [
+      "test1"
+    ],
+    "report": 19,
+    "notif_type": "resolved",
+    "message": "Your report \"kjkjhkjh\" has been marked as Resolved. Thank you!",
+    "is_read": false,
+    "delivery_status": "sent",
+    "delivery_attempts": 1,
+    "last_attempt_at": "2026-09-30T19:29:24.657Z",
+    "last_error": "",
+    "created_at": "2026-09-30T19:29:24.648Z"
+  }
+},
+{
+  "model": "base.notification",
+  "pk": 41,
+  "fields": {
+    "user": [
+      "test1"
+    ],
+    "report": 19,
+    "notif_type": "admin_action",
+    "message": "Barangay update: Resolved.",
+    "is_read": true,
+    "delivery_status": "sent",
+    "delivery_attempts": 1,
+    "last_attempt_at": "2026-09-30T19:29:24.698Z",
+    "last_error": "",
+    "created_at": "2026-09-30T19:29:24.688Z"
+  }
+},
+{
+  "model": "base.notification",
+  "pk": 42,
+  "fields": {
+    "user": [
+      "Brix"
+    ],
+    "report": 20,
+    "notif_type": "report_submitted",
+    "message": "Your report \"dfghjkl\" has been submitted successfully.",
+    "is_read": false,
+    "delivery_status": "sent",
+    "delivery_attempts": 1,
+    "last_attempt_at": "2026-10-02T07:15:53.962Z",
+    "last_error": "",
+    "created_at": "2026-10-02T07:15:53.916Z"
+  }
+},
+{
+  "model": "base.notification",
+  "pk": 43,
+  "fields": {
+    "user": [
+      "Brix"
+    ],
+    "report": 21,
+    "notif_type": "report_submitted",
+    "message": "Your report \"ksksksks\" has been submitted successfully.",
+    "is_read": false,
+    "delivery_status": "sent",
+    "delivery_attempts": 1,
+    "last_attempt_at": "2026-10-02T23:51:30.338Z",
+    "last_error": "",
+    "created_at": "2026-10-02T23:51:30.311Z"
+  }
+},
+{
+  "model": "base.reportaction",
+  "pk": 2,
+  "fields": {
+    "report": 13,
+    "action": "acknowledged",
+    "note": "we acknowledge your post expect our team to help you out in that situation. :)",
+    "created_by": [
+      "emarcb"
+    ],
+    "created_at": "2026-04-30T09:20:39.274Z"
+  }
+},
+{
+  "model": "base.reportaction",
+  "pk": 3,
+  "fields": {
+    "report": 19,
+    "action": "resolved",
+    "note": "",
+    "created_by": [
+      "emarcb"
+    ],
+    "created_at": "2026-09-30T19:29:24.670Z"
+  }
+},
+{
+  "model": "base.reportimage",
+  "pk": 2,
+  "fields": {
+    "report": 13,
+    "image": "reports/images/mbbs-blue-caduceus-symbol-lc782hzpjuqtbax1.jpg",
+    "created_at": "2026-04-30T09:14:38.832Z"
+  }
+},
+{
+  "model": "base.reportimage",
+  "pk": 3,
+  "fields": {
+    "report": 13,
+    "image": "reports/images/MOST-POPULOUS-COUNTRIES-rec-1024x728.jpg",
+    "created_at": "2026-04-30T09:14:38.841Z"
+  }
+},
+{
+  "model": "base.reportimage",
+  "pk": 4,
+  "fields": {
+    "report": 13,
+    "image": "reports/images/newspaper.jpg",
+    "created_at": "2026-04-30T09:14:38.851Z"
+  }
+},
+{
+  "model": "base.reportimage",
+  "pk": 5,
+  "fields": {
+    "report": 13,
+    "image": "reports/images/OIP.jpg",
+    "created_at": "2026-04-30T09:14:38.860Z"
+  }
+},
+{
+  "model": "base.reportimage",
+  "pk": 6,
+  "fields": {
+    "report": 16,
+    "image": "reports/images/9d6e0982-a385-42da-a1e4-08a8fb286bed.jpg",
+    "created_at": "2026-09-30T07:49:36.246Z"
+  }
+},
+{
+  "model": "base.reportimage",
+  "pk": 7,
+  "fields": {
+    "report": 17,
+    "image": "reports/images/9d6e0982-a385-42da-a1e4-08a8fb286bed_o0YVSEx.jpg",
+    "created_at": "2026-09-30T13:38:26.789Z"
+  }
+},
+{
+  "model": "base.reportimage",
+  "pk": 8,
+  "fields": {
+    "report": 17,
+    "image": "reports/images/2d58b3b2-88a4-4e31-9cd5-310fd2b9314f.jpg",
+    "created_at": "2026-09-30T13:38:26.796Z"
+  }
+},
+{
+  "model": "base.reportimage",
+  "pk": 9,
+  "fields": {
+    "report": 17,
+    "image": "reports/images/f65d45c7-cba3-4282-88e4-1768cef24f3a.jpg",
+    "created_at": "2026-09-30T13:38:26.801Z"
+  }
+},
+{
+  "model": "base.reportimage",
+  "pk": 10,
+  "fields": {
+    "report": 18,
+    "image": "reports/images/f65d45c7-cba3-4282-88e4-1768cef24f3a_oAFElgK.jpg",
+    "created_at": "2026-09-30T13:44:38.295Z"
+  }
+},
+{
+  "model": "base.reportimage",
+  "pk": 11,
+  "fields": {
+    "report": 19,
+    "image": "reports/images/3de599bf-947f-47db-9230-79bf08c448cb.jpg",
+    "created_at": "2026-09-30T19:26:42.170Z"
+  }
+},
+{
+  "model": "base.reportimage",
+  "pk": 12,
+  "fields": {
+    "report": 20,
+    "image": "reports/images/f997d4f8-b68b-464b-91a1-e592142ce4e1.jpg",
+    "created_at": "2026-10-02T07:15:53.973Z"
+  }
+},
+{
+  "model": "base.reportimage",
+  "pk": 13,
+  "fields": {
+    "report": 20,
+    "image": "reports/images/butterfky.jpg",
+    "created_at": "2026-10-02T07:15:53.978Z"
+  }
+},
+{
+  "model": "base.reportimage",
+  "pk": 14,
+  "fields": {
+    "report": 20,
+    "image": "reports/images/ball_1.jpg",
+    "created_at": "2026-10-02T07:15:53.982Z"
+  }
+},
+{
+  "model": "base.reportimage",
+  "pk": 15,
+  "fields": {
+    "report": 21,
+    "image": "reports/images/toyota-gr-supra-a90-1920x1080-21985.jpg",
+    "created_at": "2026-10-02T23:51:30.348Z"
+  }
+},
+{
+  "model": "base.barangay",
+  "pk": 1,
+  "fields": {
+    "name": "Test Barangay"
+  }
+},
+{
+  "model": "base.barangay",
+  "pk": 2,
+  "fields": {
+    "name": "bagong silang"
+  }
+},
+{
+  "model": "base.communityprofile",
+  "pk": 1,
+  "fields": {
+    "user": [
+      "Brix"
+    ],
+    "barangay": 2,
+    "address": "P6, Bagong Silang 1 Labo Camarines Norte",
+    "phone_number": "+639451842028",
+    "proof_of_residency": "residency_proofs/6e86a8e6-d996-4789-9306-0dd3d9653a64.png",
+    "avatar": "profiles/Screenshot_2025-04-23_204138.png",
+    "status": "approved",
+    "reviewed_by": [
+      "bebeq"
+    ],
+    "reviewed_at": "2026-04-29T06:19:30.099Z",
+    "review_notes": "",
+    "created_at": "2026-04-29T06:08:03.609Z"
+  }
+},
+{
+  "model": "base.communityprofile",
+  "pk": 2,
+  "fields": {
+    "user": [
+      "emarcb"
+    ],
+    "barangay": 2,
+    "address": "Purok 2",
+    "phone_number": "+639614395906",
+    "proof_of_residency": "residency_proofs/superman.png",
+    "avatar": "",
+    "status": "approved",
+    "reviewed_by": [
+      "bebeq"
+    ],
+    "reviewed_at": null,
+    "review_notes": "",
+    "created_at": "2026-04-30T05:11:21.912Z"
+  }
+},
+{
+  "model": "base.communityprofile",
+  "pk": 3,
+  "fields": {
+    "user": [
+      "michael"
+    ],
+    "barangay": 2,
+    "address": "Purok 2",
+    "phone_number": "+639614395906",
+    "proof_of_residency": "residency_proofs/hiding.png",
+    "avatar": "",
+    "status": "approved",
+    "reviewed_by": [
+      "emarcb"
+    ],
+    "reviewed_at": "2026-05-01T03:35:04.341Z",
+    "review_notes": "",
+    "created_at": "2026-05-01T03:33:33.623Z"
+  }
+},
+{
+  "model": "base.communityprofile",
+  "pk": 4,
+  "fields": {
+    "user": [
+      "testuser123"
+    ],
+    "barangay": 2,
+    "address": "testaddress 2",
+    "phone_number": "+639123456789",
+    "proof_of_residency": "residency_proofs/liftt.png",
+    "avatar": "",
+    "status": "pending",
+    "reviewed_by": null,
+    "reviewed_at": null,
+    "review_notes": "",
+    "created_at": "2026-05-01T03:54:17.606Z"
+  }
+},
+{
+  "model": "base.communityprofile",
+  "pk": 5,
+  "fields": {
+    "user": [
+      "emarc23"
+    ],
+    "barangay": 1,
+    "address": "Purok-2, Sta. Rosa Sur, Jose Panganiban, Camarines Norte",
+    "phone_number": "",
+    "proof_of_residency": "residency_proofs/2d58b3b2-88a4-4e31-9cd5-310fd2b9314f.jpg",
+    "avatar": "",
+    "status": "pending",
+    "reviewed_by": null,
+    "reviewed_at": null,
+    "review_notes": "",
+    "created_at": "2026-09-30T05:52:05.144Z"
+  }
+},
+{
+  "model": "base.communityprofile",
+  "pk": 6,
+  "fields": {
+    "user": [
+      "test1"
+    ],
+    "barangay": 2,
+    "address": "Purok-2, Sta. Rosa Sur, Jose Panganiban, Camarines Norte",
+    "phone_number": "",
+    "proof_of_residency": "residency_proofs/2d58b3b2-88a4-4e31-9cd5-310fd2b9314f_ckMwDrR.jpg",
+    "avatar": "",
+    "status": "approved",
+    "reviewed_by": [
+      "emarcb"
+    ],
+    "reviewed_at": "2026-09-30T07:59:52.152Z",
+    "review_notes": "",
+    "created_at": "2026-09-30T07:40:51.009Z"
+  }
+},
+{
+  "model": "base.barangayadminprofile",
+  "pk": 1,
+  "fields": {
+    "user": [
+      "bebe"
+    ],
+    "barangay": 2
+  }
+},
+{
+  "model": "base.barangayadminprofile",
+  "pk": 2,
+  "fields": {
+    "user": [
+      "emarcb"
+    ],
+    "barangay": 2
+  }
+},
+{
+  "model": "base.bulletinpost",
+  "pk": 1,
+  "fields": {
+    "barangay": 2,
+    "title": "nun u",
+    "category": "announcement",
+    "post_type": "bulletin",
+    "content": "ym ym",
+    "priority": "important",
+    "attachment": "bulletins/6e86a8e6-d996-4789-9306-0dd3d9653a64.png",
+    "is_pinned": true,
+    "expires_at": null,
+    "created_by": [
+      "bebeq"
+    ],
+    "created_at": "2026-04-29T21:02:16.748Z",
+    "updated_at": "2026-04-30T10:03:52.272Z"
+  }
+},
+{
+  "model": "base.bulletinpost",
+  "pk": 2,
+  "fields": {
+    "barangay": 2,
+    "title": "new policy",
+    "category": "memorandum",
+    "post_type": "bulletin",
+    "content": "this is a new rule to our barangay that 17 years old and below are not allowed to roam in the middle of the night",
+    "priority": "important",
+    "attachment": "",
+    "is_pinned": false,
+    "expires_at": null,
+    "created_by": [
+      "emarcb"
+    ],
+    "created_at": "2026-04-30T09:19:11.994Z",
+    "updated_at": "2026-04-30T09:19:11.994Z"
+  }
+},
+{
+  "model": "base.bulletinimage",
+  "pk": 1,
+  "fields": {
+    "post": 2,
+    "image": "bulletins/images/8e243b82-0f73-4111-be0f-988d581b3fa0.jpg",
+    "created_at": "2026-04-30T09:19:12.005Z"
+  }
+},
+{
+  "model": "base.bulletinpostview",
+  "pk": 3,
+  "fields": {
+    "post": 2,
+    "user": [
+      "Brix"
+    ],
+    "seen_at": "2026-04-30T09:22:06.374Z"
+  }
+},
+{
+  "model": "base.bulletinpostview",
+  "pk": 4,
+  "fields": {
+    "post": 1,
+    "user": [
+      "Brix"
+    ],
+    "seen_at": "2026-04-30T10:17:11.016Z"
+  }
+},
+{
+  "model": "base.bulletinpostview",
+  "pk": 5,
+  "fields": {
+    "post": 1,
+    "user": [
+      "michael"
+    ],
+    "seen_at": "2026-05-01T03:35:17.551Z"
+  }
+},
+{
+  "model": "base.bulletinpostview",
+  "pk": 6,
+  "fields": {
+    "post": 2,
+    "user": [
+      "michael"
+    ],
+    "seen_at": "2026-05-01T03:35:17.551Z"
+  }
+},
+{
+  "model": "base.bulletinpostview",
+  "pk": 7,
+  "fields": {
+    "post": 1,
+    "user": [
+      "test1"
+    ],
+    "seen_at": "2026-09-30T08:00:04.126Z"
+  }
+},
+{
+  "model": "base.bulletinpostview",
+  "pk": 8,
+  "fields": {
+    "post": 2,
+    "user": [
+      "test1"
+    ],
+    "seen_at": "2026-09-30T08:00:04.126Z"
+  }
+},
+{
+  "model": "base.bulletinposthistory",
+  "pk": 1,
+  "fields": {
+    "bulletin": 1,
+    "barangay": 2,
+    "action": "created",
+    "changed_by": [
+      "bebeq"
+    ],
+    "title_snapshot": "nun u",
+    "category_snapshot": "announcement",
+    "priority_snapshot": "important",
+    "content_snapshot": "ym ym",
+    "is_pinned_snapshot": false,
+    "expires_at_snapshot": null,
+    "attachment_name": "bulletins/6e86a8e6-d996-4789-9306-0dd3d9653a64.png",
+    "created_at": "2026-04-29T21:02:17.717Z"
+  }
+},
+{
+  "model": "base.bulletinposthistory",
+  "pk": 2,
+  "fields": {
+    "bulletin": 1,
+    "barangay": 2,
+    "action": "pin_toggled",
+    "changed_by": [
+      "bebeq"
+    ],
+    "title_snapshot": "nun u",
+    "category_snapshot": "announcement",
+    "priority_snapshot": "important",
+    "content_snapshot": "ym ym",
+    "is_pinned_snapshot": true,
+    "expires_at_snapshot": null,
+    "attachment_name": "bulletins/6e86a8e6-d996-4789-9306-0dd3d9653a64.png",
+    "created_at": "2026-04-30T05:33:10.581Z"
+  }
+},
+{
+  "model": "base.bulletinposthistory",
+  "pk": 3,
+  "fields": {
+    "bulletin": 2,
+    "barangay": 2,
+    "action": "created",
+    "changed_by": [
+      "emarcb"
+    ],
+    "title_snapshot": "new policy",
+    "category_snapshot": "memorandum",
+    "priority_snapshot": "important",
+    "content_snapshot": "this is a new rule to our barangay that 17 years old and below are not allowed to roam in the middle of the night",
+    "is_pinned_snapshot": false,
+    "expires_at_snapshot": null,
+    "attachment_name": "",
+    "created_at": "2026-04-30T09:19:12.012Z"
+  }
+},
+{
+  "model": "base.auditlog",
+  "pk": 1,
+  "fields": {
+    "actor": null,
+    "action": "promote_admin",
+    "target_type": "User",
+    "target_id": 8,
+    "target_repr": "promote_test_user",
+    "barangay": 1,
+    "reason": "test promotion",
+    "data": {},
+    "created_at": "2026-04-28T23:04:08.930Z"
+  }
+},
+{
+  "model": "base.auditlog",
+  "pk": 14,
+  "fields": {
+    "actor": [
+      "emarcb"
+    ],
+    "action": "update_status",
+    "target_type": "Report",
+    "target_id": 11,
+    "target_repr": "sunog",
+    "barangay": 2,
+    "reason": "",
+    "data": {
+      "status": "resolved"
+    },
+    "created_at": "2026-04-30T06:28:42.428Z"
+  }
+},
+{
+  "model": "base.auditlog",
+  "pk": 16,
+  "fields": {
+    "actor": [
+      "emarcb"
+    ],
+    "action": "create_bulletin",
+    "target_type": "BulletinPost",
+    "target_id": 2,
+    "target_repr": "new policy",
+    "barangay": 2,
+    "reason": "",
+    "data": {
+      "priority": "important",
+      "is_pinned": false
+    },
+    "created_at": "2026-04-30T09:19:12.019Z"
+  }
+},
+{
+  "model": "base.auditlog",
+  "pk": 17,
+  "fields": {
+    "actor": [
+      "emarcb"
+    ],
+    "action": "report_action",
+    "target_type": "Report",
+    "target_id": 13,
+    "target_repr": "report title",
+    "barangay": 2,
+    "reason": "we acknowledge your post expect our team to help you out in that situation. :)",
+    "data": {
+      "action": "acknowledged"
+    },
+    "created_at": "2026-04-30T09:20:39.284Z"
+  }
+},
+{
+  "model": "base.auditlog",
+  "pk": 18,
+  "fields": {
+    "actor": [
+      "emarcb"
+    ],
+    "action": "update_status",
+    "target_type": "Report",
+    "target_id": 13,
+    "target_repr": "report title",
+    "barangay": 2,
+    "reason": "",
+    "data": {
+      "status": "resolved"
+    },
+    "created_at": "2026-04-30T09:20:59.821Z"
+  }
+},
+{
+  "model": "base.auditlog",
+  "pk": 19,
+  "fields": {
+    "actor": [
+      "emarcb"
+    ],
+    "action": "approve_user",
+    "target_type": "CommunityProfile",
+    "target_id": 3,
+    "target_repr": "michael",
+    "barangay": 2,
+    "reason": "",
+    "data": {
+      "status": "approved"
+    },
+    "created_at": "2026-05-01T03:35:04.354Z"
+  }
+},
+{
+  "model": "base.auditlog",
+  "pk": 20,
+  "fields": {
+    "actor": [
+      "emarcb"
+    ],
+    "action": "approve_user",
+    "target_type": "CommunityProfile",
+    "target_id": 6,
+    "target_repr": "test1",
+    "barangay": 2,
+    "reason": "",
+    "data": {
+      "status": "approved"
+    },
+    "created_at": "2026-09-30T07:59:52.162Z"
+  }
+},
+{
+  "model": "base.auditlog",
+  "pk": 21,
+  "fields": {
+    "actor": [
+      "emarcb"
+    ],
+    "action": "update_status",
+    "target_type": "Report",
+    "target_id": 19,
+    "target_repr": "kjkjhkjh",
+    "barangay": 2,
+    "reason": "",
+    "data": {
+      "status": "in_progress"
+    },
+    "created_at": "2026-09-30T19:28:19.147Z"
+  }
+},
+{
+  "model": "base.auditlog",
+  "pk": 22,
+  "fields": {
+    "actor": [
+      "emarcb"
+    ],
+    "action": "update_status",
+    "target_type": "Report",
+    "target_id": 18,
+    "target_repr": "uytuyt",
+    "barangay": 2,
+    "reason": "",
+    "data": {
+      "status": "in_progress"
+    },
+    "created_at": "2026-09-30T19:28:32.547Z"
+  }
+},
+{
+  "model": "base.auditlog",
+  "pk": 23,
+  "fields": {
+    "actor": [
+      "emarcb"
+    ],
+    "action": "report_action",
+    "target_type": "Report",
+    "target_id": 19,
+    "target_repr": "kjkjhkjh",
+    "barangay": 2,
+    "reason": "",
+    "data": {
+      "action": "resolved"
+    },
+    "created_at": "2026-09-30T19:29:24.680Z"
+  }
+},
+{
+  "model": "base.reportcomment",
+  "pk": 1,
+  "fields": {
+    "report": 13,
+    "parent": null,
+    "user": [
+      "Brix"
+    ],
+    "message": "di naman, wala naman pintuntahan ko man",
+    "created_at": "2026-04-30T09:15:46.124Z",
+    "updated_at": "2026-04-30T09:15:46.124Z"
+  }
+},
+{
+  "model": "base.reportcomment",
+  "pk": 2,
+  "fields": {
+    "report": 15,
+    "parent": null,
+    "user": [
+      "Brix"
+    ],
+    "message": "helo po",
+    "created_at": "2026-05-05T05:12:17.243Z",
+    "updated_at": "2026-05-05T05:12:17.243Z"
+  }
+},
+{
+  "model": "base.reportcomment",
+  "pk": 3,
+  "fields": {
+    "report": 15,
+    "parent": 2,
+    "user": [
+      "michael"
+    ],
+    "message": "high",
+    "created_at": "2026-05-05T05:13:27.370Z",
+    "updated_at": "2026-05-05T05:13:27.370Z"
+  }
+},
+{
+  "model": "base.reportcomment",
+  "pk": 4,
+  "fields": {
+    "report": 14,
+    "parent": null,
+    "user": [
+      "michael"
+    ],
+    "message": "heeee",
+    "created_at": "2026-05-05T05:17:18.852Z",
+    "updated_at": "2026-05-05T05:17:18.852Z"
+  }
+},
+{
+  "model": "base.reportcomment",
+  "pk": 5,
+  "fields": {
+    "report": 14,
+    "parent": null,
+    "user": [
+      "Brix"
+    ],
+    "message": "ghg",
+    "created_at": "2026-05-05T05:17:50.821Z",
+    "updated_at": "2026-05-05T05:17:50.821Z"
+  }
+},
+{
+  "model": "base.reportcomment",
+  "pk": 6,
+  "fields": {
+    "report": 20,
+    "parent": null,
+    "user": [
+      "Brix"
+    ],
+    "message": "lkjlkjlkjlkjlkj",
+    "created_at": "2026-10-02T23:49:59.082Z",
+    "updated_at": "2026-10-02T23:49:59.082Z"
+  }
+}
+]

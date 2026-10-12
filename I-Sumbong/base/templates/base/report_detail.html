@@ -1,0 +1,248 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block full_content %}
+<div class="form-page-card detail-page-card">
+    <div class="form-page-header detail-header">
+        <a href="{% url 'home' %}" class="btn-modern detail-back-btn">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+        <div>
+            <h3 class="detail-title">{{ report.title }}</h3>
+            <p class="detail-subtitle">
+                Reported by {{ report.user.username }} - {{ report.created_at|date:"M d, Y H:i" }}
+            </p>
+        </div>
+    </div>
+
+    <div class="detail-body">
+        <div class="detail-meta-grid">
+            <div class="detail-meta-item">
+                <span class="detail-meta-label">Location</span>
+                <span class="detail-meta-value">
+                    <span id="reportLocationName">{{ report.location }}</span>
+                </span>
+            </div>
+            <div class="detail-meta-item">
+                <span class="detail-meta-label">Status</span>
+                <span class="detail-meta-value">{{ report.get_status_display }}</span>
+            </div>
+        </div>
+
+        <section class="detail-section">
+            <h4>Description</h4>
+            <p class="detail-description">{{ report.description }}</p>
+        </section>
+
+        {% if report.display_image_urls %}
+        <section class="detail-section">
+            <h4>Photos</h4>
+            <div class="detail-gallery">
+                {% for image_url in report.display_image_urls %}
+                    <img src="{{ image_url }}" alt="{{ report.title }}">
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        {% if report.latitude and report.longitude %}
+        <section class="detail-section">
+            <h4>Map Location</h4>
+            <div id="reportMap" class="detail-map" data-latitude="{{ report.latitude }}" data-longitude="{{ report.longitude }}"></div>
+            <p id="reportMapStatus" class="location-map-status" aria-live="polite">{% if google_maps_api_key %}Loading Google Maps...{% else %}Google Maps API key is not configured.{% endif %}</p>
+        </section>
+        {% endif %}
+
+        <section class="detail-section">
+            <h4>Timeline & Admin Notes</h4>
+            <ul class="timeline">
+                {% for a in actions %}
+                <li class="timeline-item">
+                    <div class="item-title">
+                        {{ a.get_action_display }}
+                        <span class="item-meta">- {{ a.created_at|date:"M d, Y H:i" }}</span>
+                    </div>
+                    {% if a.created_by %}
+                    <div class="item-note">By: {{ a.created_by.username }}</div>
+                    {% endif %}
+                    {% if a.note %}
+                    <div class="item-note">{{ a.note }}</div>
+                    {% endif %}
+                </li>
+                {% empty %}
+                <li class="timeline-item">No timeline entries yet.</li>
+                {% endfor %}
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h4>Conversation</h4>
+            <div id="commentsSection">
+                <div id="commentsList">
+                    {% for c in report.comments.all %}
+                    <div class="comment-item" id="comment-{{ c.id }}">
+                        <div class="item-title">
+                            {{ c.user.username }}
+                            <span class="item-meta">- {{ c.created_at|timesince }} ago</span>
+                        </div>
+                        <div class="item-note">{{ c.message }}</div>
+                        {% if can_comment %}
+                        <div class="item-note"><a href="#" class="reply-link" data-id="{{ c.id }}">Reply</a></div>
+                        {% endif %}
+                        {% for r in c.replies.all %}
+                        <div class="comment-reply">
+                            <div class="item-title">
+                                {{ r.user.username }}
+                                <span class="item-meta">- {{ r.created_at|timesince }} ago</span>
+                            </div>
+                            <div class="item-note">{{ r.message }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% empty %}
+                    <div class="empty-state">No comments yet.</div>
+                    {% endfor %}
+                </div>
+
+                {% if can_comment %}
+                <div class="comment-form-wrap">
+                    <form id="commentForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="parent_id" id="parentIdInput">
+                        <textarea name="message" id="commentMessage" rows="3" class="form-input" placeholder="Write a comment..."></textarea>
+                        <div class="comment-actions">
+                            <button type="button" id="cancelReply" class="btn-cancel" hidden>Cancel Reply</button>
+                            <button type="submit" class="btn-modern btn-login">Post Comment</button>
+                        </div>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+window.initGoogleReportDetailMap = function(){
+    const mapElement = document.getElementById('reportMap');
+    if(!mapElement || !window.google?.maps) return;
+    const lat = Number(mapElement.dataset.latitude);
+    const lng = Number(mapElement.dataset.longitude);
+    const mapStatus = document.getElementById('reportMapStatus');
+
+    if (Number.isFinite(lat) && Number.isFinite(lng)) {
+        const position = {lat: lat, lng: lng};
+        const map = new google.maps.Map(document.getElementById('reportMap'), {
+            center: position,
+            zoom: 16,
+            mapTypeControl: false,
+            streetViewControl: false
+        });
+        new google.maps.Marker({map: map, position: position});
+
+        const locationName = document.getElementById('reportLocationName');
+        if (locationName && /^[-+]?\d+(?:\.\d+)?\s*,\s*[-+]?\d+(?:\.\d+)?$/.test(locationName.textContent.trim())) {
+            new google.maps.Geocoder().geocode({location: position})
+                .then(function(result){ if(result.results?.[0]?.formatted_address) locationName.textContent = result.results[0].formatted_address; })
+                .catch(function(){ /* ignore reverse geocode errors */ });
+        }
+    }
+};
+window.handleGoogleReportDetailMapLoadError = function(){
+    const mapStatus = document.getElementById('reportMapStatus');
+    if(mapStatus) mapStatus.textContent = 'Google Maps failed to load. Check the key restrictions and enabled APIs.';
+};
+</script>
+{% if google_maps_api_key and report.latitude and report.longitude %}
+<script async src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key|urlencode }}&amp;callback=initGoogleReportDetailMap&amp;loading=async" onerror="handleGoogleReportDetailMapLoadError()"></script>
+{% endif %}
+<script>
+const commentForm = document.getElementById('commentForm');
+if (commentForm) {
+    const parentInput = document.getElementById('parentIdInput');
+    const messageInput = document.getElementById('commentMessage');
+    const cancelReply = document.getElementById('cancelReply');
+
+    commentForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const msg = messageInput.value.trim();
+        const parent = parentInput.value || '';
+        if (!msg) {
+            alert('Please enter a message.');
+            return;
+        }
+
+        const fd = new FormData();
+        fd.append('message', msg);
+        if (parent) fd.append('parent_id', parent);
+        fd.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+
+        fetch('{% url "post_report_comment" report.id %}', {
+            method: 'POST',
+            body: fd,
+            credentials: 'same-origin'
+        }).then(r => r.json()).then(data => {
+            if (data && data.status === 'ok') {
+                const c = data.comment;
+                const div = document.createElement('div');
+                div.className = 'comment-item';
+                div.id = 'comment-' + c.id;
+
+                const title = document.createElement('div');
+                title.className = 'item-title';
+                title.textContent = c.user + ' ';
+                const meta = document.createElement('span');
+                meta.className = 'item-meta';
+                meta.textContent = '- just now';
+                title.appendChild(meta);
+
+                const body = document.createElement('div');
+                body.className = 'item-note';
+                body.textContent = c.message;
+
+                div.appendChild(title);
+                div.appendChild(body);
+
+                if (c.parent) {
+                    const parentDiv = document.getElementById('comment-' + c.parent);
+                    if (parentDiv) {
+                        const replyWrap = document.createElement('div');
+                        replyWrap.className = 'comment-reply';
+                        replyWrap.appendChild(title);
+                        replyWrap.appendChild(body);
+                        parentDiv.appendChild(replyWrap);
+                    }
+                } else {
+                    const list = document.getElementById('commentsList');
+                    list.insertBefore(div, list.firstChild);
+                }
+
+                messageInput.value = '';
+                parentInput.value = '';
+                cancelReply.hidden = true;
+            } else {
+                alert(data.message || 'Failed to post comment.');
+            }
+        }).catch(() => {
+            alert('Network error posting comment.');
+        });
+    });
+
+    document.querySelectorAll('.reply-link').forEach(function(el) {
+        el.addEventListener('click', function(e) {
+            e.preventDefault();
+            parentInput.value = this.dataset.id;
+            messageInput.focus();
+            cancelReply.hidden = false;
+        });
+    });
+
+    cancelReply?.addEventListener('click', function() {
+        parentInput.value = '';
+        this.hidden = true;
+    });
+}
+</script>
+{% endblock %}

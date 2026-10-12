@@ -1,0 +1,1901 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block main_class %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block full_content %}
+<script>
+document.documentElement.classList.add('dashboard-loading');
+
+document.addEventListener('DOMContentLoaded', function () {
+    const adminSectionOrder = [
+        'section-dashboard',
+        'section-users',
+        'section-validation',
+        'section-bulletin',
+        'section-analytics',
+        'section-reports'
+    ];
+    let suppressScrollSpy = false;
+
+    function setActiveAdminNav(target) {
+        document.querySelectorAll('.admin-nav-link[data-target]').forEach(function (link) {
+            link.classList.remove('active');
+            link.removeAttribute('aria-current');
+        });
+        const activeLink = document.querySelector('.admin-nav-link[data-target="' + target + '"]');
+        if (activeLink) {
+            activeLink.classList.add('active');
+            activeLink.setAttribute('aria-current', 'page');
+        }
+    }
+
+    function getScrollSpyOffset() {
+        const topbar = document.querySelector('.admin-topbar');
+        return (topbar ? topbar.offsetHeight : 0) + 40;
+    }
+
+    function getSectionTop(section) {
+        return section.getBoundingClientRect().top + window.scrollY;
+    }
+
+    function updateActiveAdminNavFromScroll() {
+        if (suppressScrollSpy) return;
+
+        const currentY = window.scrollY + getScrollSpyOffset();
+        let activeTarget = 'section-dashboard';
+
+        adminSectionOrder.forEach(function (target) {
+            const section = document.getElementById(target);
+            if (section && getSectionTop(section) <= currentY) {
+                activeTarget = target;
+            }
+        });
+
+        setActiveAdminNav(activeTarget);
+    }
+
+    function scrollToAdminSection(target, behavior) {
+        const anchor = target ? document.getElementById(target) : null;
+        if (!anchor) return;
+
+        suppressScrollSpy = true;
+        anchor.scrollIntoView({ behavior: behavior || 'smooth', block: 'start' });
+        setActiveAdminNav(target);
+        window.setTimeout(function () {
+            suppressScrollSpy = false;
+            updateActiveAdminNavFromScroll();
+        }, behavior === 'auto' ? 0 : 450);
+    }
+
+    document.querySelectorAll('.admin-nav-link[data-target]').forEach(function (el) {
+        el.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = el.getAttribute('data-target');
+            scrollToAdminSection(target, 'smooth');
+        });
+    });
+
+    const params = new URLSearchParams(window.location.search);
+    const targetFromQuery = params.get('page');
+    const filterIsActive = ['q', 'pending_q', 'status', 'priority', 'reports_page'].some(function (key) {
+        return params.get(key);
+    });
+    const queryTargetMap = {
+        dashboard: 'section-dashboard',
+        users: 'section-users',
+        validation: 'section-validation',
+        bulletin: 'section-bulletin',
+        analytics: 'section-analytics',
+        reports: 'section-reports'
+    };
+    const targetSection = filterIsActive ? 'section-reports' : queryTargetMap[targetFromQuery];
+    if (targetSection) {
+        scrollToAdminSection(targetSection, 'auto');
+    } else {
+        updateActiveAdminNavFromScroll();
+    }
+
+    window.addEventListener('scroll', updateActiveAdminNavFromScroll, { passive: true });
+});
+</script>
+
+<div class="admin-skeleton-overlay" aria-hidden="true">
+    <aside class="admin-skeleton-sidebar">
+        <div class="skeleton skeleton-brand"></div>
+        <div class="skeleton skeleton-nav"></div>
+        <div class="skeleton skeleton-nav"></div>
+        <div class="skeleton skeleton-nav skeleton-nav-short"></div>
+        <div class="skeleton skeleton-nav"></div>
+        <div class="skeleton skeleton-nav skeleton-nav-short"></div>
+        <div class="admin-skeleton-footer">
+            <div class="skeleton skeleton-avatar"></div>
+            <div class="admin-skeleton-footer-copy">
+                <div class="skeleton skeleton-line skeleton-line-sm"></div>
+                <div class="skeleton skeleton-line skeleton-line-xs"></div>
+            </div>
+        </div>
+    </aside>
+    <div class="admin-skeleton-main">
+        <div class="skeleton skeleton-line skeleton-line-lg"></div>
+        <div class="skeleton skeleton-line skeleton-line-md"></div>
+        <div class="admin-skeleton-stats">
+            <div class="skeleton skeleton-card"></div>
+            <div class="skeleton skeleton-card"></div>
+            <div class="skeleton skeleton-card"></div>
+            <div class="skeleton skeleton-card"></div>
+            <div class="skeleton skeleton-card"></div>
+        </div>
+        <div class="skeleton skeleton-section-heading"></div>
+        <div class="skeleton skeleton-section-copy"></div>
+        <div class="skeleton skeleton-table skeleton-table-wide"></div>
+    </div>
+</div>
+
+<div class="admin-layout admin-command-dashboard">
+    {% include 'base/_admin_sidebar.html' %}
+    <div class="admin-main">
+
+        <!-- Top Bar -->
+        <header class="admin-topbar" id="section-dashboard">
+            <div class="admin-page-heading">
+                <span class="admin-eyebrow"><i class="fas fa-crown"></i> Barangay operations</span>
+                <h1 class="admin-page-title">Command Dashboard</h1>
+                <p class="admin-page-sub">Run reports, residents, bulletins, and validation from one control room.</p>
+                {% if admin_barangay_name %}
+                <span class="admin-scope-pill"><i class="fas fa-location-dot"></i>{{ admin_barangay_name }}</span>
+                {% endif %}
+            </div>
+            <div class="admin-top-actions">
+                <button type="button" class="btn-icon" title="Promote User" onclick="openPromoteModal()">
+                    <i class="fas fa-user-plus"></i><span>Promote</span>
+                </button>
+                <button type="button" class="btn-icon btn-icon-primary" title="Create Bulletin" onclick="openCreateBulletin()">
+                    <i class="fas fa-scroll"></i><span>Bulletin</span>
+                </button>
+                <button type="button" class="btn-icon" title="Validation Queue" onclick="openValidationQuick()">
+                    <i class="fas fa-users"></i><span>Validation</span>
+                </button>
+                <a href="{% url 'home' %}" class="btn-icon" title="Back to App">
+                    <i class="fas fa-arrow-left"></i><span>App</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- Messages -->
+        {% if messages %}
+        <div class="admin-flash-stack">
+            {% for message in messages %}
+            <div class="admin-alert admin-alert-{{ message.tags }}">
+                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% else %}exclamation-circle{% endif %}"></i>
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if last_bulk_action %}
+        <div class="admin-notice-row">
+            <form method="post" class="admin-notice-form">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="undo_last_bulk">
+                <div class="admin-alert admin-alert-info admin-notice-alert">
+                    <i class="fas fa-undo"></i>
+                    <div>
+                        <strong>{{ last_bulk_action.count }}</strong> users were {% if last_bulk_action.action == 'bulk_approve_users' %}approved{% else %}rejected{% endif %}.
+                        <div class="admin-notice-copy">Performed just now - you can undo this change.</div>
+                    </div>
+                </div>
+                <button type="submit" class="admin-filter-btn">Undo</button>
+            </form>
+        </div>
+        {% endif %}
+        {% if last_deleted_report %}
+        <div class="admin-notice-row">
+            <form method="post" class="admin-notice-form">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="undo_delete_report">
+                <div class="admin-alert admin-alert-info admin-notice-alert">
+                    <i class="fas fa-undo"></i>
+                    <div>
+                        Deleted: <strong>{{ last_deleted_report.title }}</strong>
+                        <div class="admin-notice-copy">Recently deleted - you can undo this deletion.</div>
+                    </div>
+                </div>
+                <button type="submit" class="admin-filter-btn">Undo Delete</button>
+            </form>
+        </div>
+        {% endif %}
+
+        <section class="admin-command-hero" aria-label="Barangay command center summary">
+            <div class="admin-command-copy">
+                <span class="admin-eyebrow"><i class="fas fa-chart-line"></i> Operations Portfolio</span>
+                <h2>{{ admin_barangay_name|default:"Barangay" }} Control Room</h2>
+                <p>Track issue flow, validate residents, and publish official updates with a clear executive view.</p>
+                <div class="admin-command-meta">
+                    <span><i class="fas fa-file-lines"></i>{{ total }} report{{ total|pluralize }}</span>
+                    <span><i class="fas fa-users"></i>{{ total_users }} resident{{ total_users|pluralize }}</span>
+                    <span><i class="fas fa-check-circle"></i>{{ resolved }} resolved</span>
+                </div>
+            </div>
+            <div class="admin-command-ledger">
+                <div class="admin-command-ledger-top">
+                    <span>Response Ledger</span>
+                    <strong>{{ pending|add:in_progress }} open</strong>
+                </div>
+                <div class="admin-command-ledger-grid">
+                    <div>
+                        <span>{{ pending }}</span>
+                        <p>Pending Queue</p>
+                    </div>
+                    <div>
+                        <span>{{ in_progress }}</span>
+                        <p>In Operations</p>
+                    </div>
+                    <div>
+                        <span>{{ resolved }}</span>
+                        <p>Resolved Wins</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Cards -->
+        <div class="admin-stats">
+            <div class="admin-stat-card">
+                <div class="admin-stat-icon" style="background: #eff6ff; color: #2563eb;">
+                    <i class="fas fa-file-lines"></i>
+                </div>
+                <div>
+                    <span class="admin-stat-number">{{ total }}</span>
+                    <span class="admin-stat-label">Total Reports</span>
+                    <span class="admin-stat-chip">Portfolio</span>
+                </div>
+            </div>
+            <div class="admin-stat-card">
+                <div class="admin-stat-icon" style="background: #fef9c3; color: #854d0e;">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div>
+                    <span class="admin-stat-number">{{ pending }}</span>
+                    <span class="admin-stat-label">Pending</span>
+                    <span class="admin-stat-chip">Queue</span>
+                </div>
+            </div>
+            <div class="admin-stat-card">
+                <div class="admin-stat-icon" style="background: #dbeafe; color: #1e40af;">
+                    <i class="fas fa-spinner"></i>
+                </div>
+                <div>
+                    <span class="admin-stat-number">{{ in_progress }}</span>
+                    <span class="admin-stat-label">In Progress</span>
+                    <span class="admin-stat-chip">Operations</span>
+                </div>
+            </div>
+            <div class="admin-stat-card">
+                <div class="admin-stat-icon" style="background: #dcfce7; color: #15803d;">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div>
+                    <span class="admin-stat-number">{{ resolved }}</span>
+                    <span class="admin-stat-label">Resolved</span>
+                    <span class="admin-stat-chip">Wins</span>
+                </div>
+            </div>
+            <div class="admin-stat-card">
+                <div class="admin-stat-icon" style="background: #f3e8ff; color: #7e22ce;">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div>
+                    <span class="admin-stat-number">{{ total_users }}</span>
+                    <span class="admin-stat-label">Total Users</span>
+                    <span class="admin-stat-chip">Residents</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Promote to Barangay Admin -->
+        <div class="admin-table-wrap admin-section-card" id="section-users">
+            <div class="admin-section-header admin-section-header-with-form">
+                <div>
+                    <h3>Promote User to Barangay Admin</h3>
+                    <p>Select an existing user and assign them to a barangay. Only staff can perform this.</p>
+                </div>
+                <form method="post" class="promote-form ajax-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="promote_to_barangay_admin">
+                    <input list="promotableUsersList" name="user_id" placeholder="Type username to search users" class="form-input" autocomplete="off" required>
+                    <datalist id="promotableUsersList">
+                        {% for u in promotable_users %}
+                        <option value="{{ u.username }}" label="{{ u.email|default:'No email' }}"></option>
+                        {% endfor %}
+                    </datalist>
+                    {% if not admin_barangay %}
+                    <select name="barangay_id" class="admin-filter-select" required>
+                        <option value="">Select barangay</option>
+                        {% for b in barangays %}
+                        <option value="{{ b.id }}">{{ b.name }}</option>
+                        {% endfor %}
+                    </select>
+                    {% else %}
+                    <input type="hidden" name="barangay_id" value="{{ admin_barangay.id }}">
+                    {% endif %}
+                    <button type="submit" class="admin-filter-btn">Promote</button>
+                </form>
+            </div>
+        </div>
+        {% if barangay_admins and barangay_admins.exists %}
+        <div class="admin-table-wrap" style="margin-top:12px;">
+            <div style="padding:12px 18px 0 18px; display:flex; align-items:center; justify-content:space-between;">
+                <h3 style="margin:0; font-size:15px;">Current Barangay Admins</h3>
+            </div>
+            <table class="admin-table" style="margin-top:8px;">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Barangay</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ap in barangay_admins %}
+                    <tr>
+                        <td>{{ ap.user.username }}</td>
+                        <td>{{ ap.barangay.name }}</td>
+                        <td>
+                            <form method="post" style="display:inline;" class="demote-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="demote_barangay_admin">
+                                <input type="hidden" name="user_id" value="{{ ap.user.id }}">
+                                <button type="button" class="btn-danger demote-btn" data-username="{{ ap.user.username }}">Demote</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+<script>
+function openDemoteModal(id, username){
+    document.getElementById('demoteUserId').value = id;
+    document.getElementById('demoteUsername').textContent = username;
+    document.getElementById('demoteConfirmModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+function closeDemoteModal(){
+    document.getElementById('demoteConfirmModal').classList.remove('open');
+    document.body.style.overflow = '';
+}
+document.addEventListener('click', function(e){
+    if(e.target && e.target.matches('.demote-btn')){
+        const form = e.target.closest('form');
+        const userId = form.querySelector('input[name="user_id"]').value;
+        const username = e.target.dataset.username || 'user';
+        openDemoteModal(userId, username);
+    }
+});
+</script>
+
+{# admin modals are included from base/_admin_modals.html #}
+
+<script>
+const csrftoken = getCookie('csrftoken');
+
+function openPromoteModal(){ document.getElementById('promoteModal').classList.add('open'); document.body.style.overflow='hidden'; }
+function closePromoteModal(){ document.getElementById('promoteModal').classList.remove('open'); document.body.style.overflow=''; }
+function openCreateBulletin(){ document.getElementById('createBulletinModal').classList.add('open'); document.body.style.overflow='hidden'; }
+function closeCreateBulletin(){ document.getElementById('createBulletinModal').classList.remove('open'); document.body.style.overflow=''; }
+function openValidationQuick(){ document.getElementById('validationQuickModal').classList.add('open'); document.body.style.overflow='hidden'; }
+function closeValidationQuick(){ document.getElementById('validationQuickModal').classList.remove('open'); document.body.style.overflow=''; }
+
+// AJAX submit for promote form (send X-Requested-With and show toast)
+document.getElementById('promoteModalForm')?.addEventListener('submit', function(e){
+    e.preventDefault();
+    const form = e.target;
+    const userId = form.querySelector('[name="user_id"]').value.trim();
+    const barangayEl = form.querySelector('[name="barangay_id"]');
+    const barangayId = barangayEl ? barangayEl.value.trim() : '';
+    if(!userId || (barangayEl && !barangayId)){
+        showToast('Please select a user and barangay.', 'error');
+        return;
+    }
+    const fd = new FormData(form);
+    fetch(window.location.pathname, { method: 'POST', headers: {'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest'}, body: fd, credentials: 'same-origin' })
+        .then(r=>r.json().catch(()=>({status: r.ok? 'ok':'error', message:'Unexpected response'})))
+        .then(data=>{
+            if(data && data.status === 'ok'){
+                closePromoteModal();
+                showToast(data.message || 'User promoted', 'success');
+                form.reset();
+            } else {
+                showToast(data.message || 'Failed to promote user.', 'error');
+            }
+        }).catch(()=>{ showToast('Network error.', 'error'); });
+});
+
+// AJAX submit for create bulletin form
+document.getElementById('createBulletinForm')?.addEventListener('submit', function(e){
+    e.preventDefault();
+    const form = e.target;
+    const title = form.querySelector('[name="title"]').value.trim();
+    const category = form.querySelector('[name="category"]') ? form.querySelector('[name="category"]').value.trim() : '';
+    const content = form.querySelector('[name="content"]').value.trim();
+    if(!title || !category || !content){ showToast('Please complete title, category, and content.', 'error'); return; }
+    const fd = new FormData(form);
+    fetch(window.location.pathname, { method: 'POST', headers: {'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest'}, body: fd, credentials: 'same-origin' })
+        .then(r=>r.json().catch(()=>({status: r.ok? 'ok':'error', message:'Unexpected response'})))
+        .then(data=>{
+            if(data && data.status === 'ok'){
+                closeCreateBulletin();
+                showToast(data.message || 'Bulletin created', 'success');
+                form.reset();
+            } else {
+                showToast(data.message || 'Failed to create bulletin.', 'error');
+            }
+        }).catch(()=>{ showToast('Network error.', 'error'); });
+});
+</script>
+
+<script>
+// Upload validation + preview utilities with client-side image compression
+function bytesToMB(b){ return b/1024/1024; }
+function validateFilesList(files, opts){
+    const maxFiles = opts.maxFiles||8;
+    const allowed = opts.allowedTypes||['image/jpeg','image/png','image/webp'];
+    if(files.length > maxFiles) return {ok:false, message: `Please select up to ${maxFiles} images.`};
+    for(let i=0;i<files.length;i++){
+        const f = files[i];
+        if(allowed.indexOf(f.type) === -1) return {ok:false, message: 'One or more files are not supported image types.'};
+    }
+    return {ok:true};
+}
+
+function renderPreviewList(files, container){
+    container.innerHTML = '';
+    const frag = document.createDocumentFragment();
+    Array.from(files).forEach((file, idx)=>{
+        const url = URL.createObjectURL(file);
+        const wrap = document.createElement('div'); wrap.className='preview-thumb';
+        const img = document.createElement('img'); img.src = url; img.alt = file.name;
+        const btn = document.createElement('button'); btn.className='remove-thumb'; btn.type='button'; btn.textContent='✕';
+        btn.addEventListener('click', function(){ removeFileFromInput(container.dataset.inputId, idx); });
+        wrap.appendChild(img); wrap.appendChild(btn);
+        frag.appendChild(wrap);
+    });
+    container.appendChild(frag);
+}
+
+function removeFileFromInput(inputId, removeIndex){
+    const input = document.getElementById(inputId);
+    if(!input) return;
+    const dt = new DataTransfer();
+    const files = Array.from(input.files);
+    files.forEach((f,i)=>{ if(i!==removeIndex) dt.items.add(f); });
+    input.files = dt.files;
+    const preview = document.getElementById(inputId+'Preview');
+    if(preview) renderPreviewList(input.files, preview);
+}
+
+function compressImage(file, maxWidth=1600, quality=0.82){
+    return new Promise((resolve, reject)=>{
+        const img = new Image();
+        img.onload = function(){
+            const ratio = img.width / img.height;
+            const w = Math.min(maxWidth, img.width);
+            const h = Math.round(w / ratio);
+            const canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            canvas.toBlob(function(blob){
+                if(!blob) return reject(new Error('Compression failed'));
+                // create a File so it can be appended to form data
+                const ext = 'jpg';
+                const name = file.name.replace(/\.[^.]+$/, '') + '.' + ext;
+                const f = new File([blob], name, { type: 'image/jpeg' });
+                resolve(f);
+            }, 'image/jpeg', quality);
+        };
+        img.onerror = function(){ reject(new Error('Image load error')); };
+        img.src = URL.createObjectURL(file);
+    });
+}
+
+async function compressFilesList(files, opts){
+    const maxWidth = opts.maxWidth||1600;
+    const quality = typeof opts.quality === 'number' ? opts.quality : 0.82;
+    const results = [];
+    for(let i=0;i<files.length;i++){
+        try{
+            const compressed = await compressImage(files[i], maxWidth, quality);
+            results.push(compressed);
+        } catch(e){
+            // fallback to original
+            results.push(files[i]);
+        }
+    }
+    return results;
+}
+
+// Bulletin attachments preview + compression
+const bulletinInput = document.getElementById('bulletinAttachments');
+if(bulletinInput){
+    const previewWrap = document.getElementById('bulletinAttachmentsPreview');
+    bulletinInput.addEventListener('change', async function(){
+        const rawFiles = Array.from(this.files || []);
+        const res = validateFilesList(rawFiles, {maxFiles:8});
+        if(!res.ok){ showToast(res.message, 'error'); this.value=''; previewWrap.innerHTML=''; return; }
+        // compress files (async)
+        const compressed = await compressFilesList(rawFiles, {maxWidth:1600, quality:0.82});
+        // replace input files with compressed versions
+        const dt = new DataTransfer();
+        compressed.forEach(f => dt.items.add(f));
+        this.files = dt.files;
+        previewWrap.className='upload-preview'; previewWrap.dataset.inputId = 'bulletinAttachments';
+        renderPreviewList(this.files, previewWrap);
+    });
+}
+
+// Report photos preview + compression (used by home page input)
+const reportPhotoInput = document.getElementById('photoInput');
+if(reportPhotoInput){
+    const previewWrap = document.getElementById('photoInputPreview');
+    window.handleReportFiles = async function(el){
+        const rawFiles = Array.from(el.files || []);
+        const res = validateFilesList(rawFiles, {maxFiles:8});
+        if(!res.ok){ showToast(res.message, 'error'); el.value=''; previewWrap.innerHTML=''; return; }
+        const compressed = await compressFilesList(rawFiles, {maxWidth:1600, quality:0.82});
+        const dt = new DataTransfer(); compressed.forEach(f => dt.items.add(f));
+        el.files = dt.files;
+        previewWrap.className='upload-preview'; previewWrap.dataset.inputId = 'photoInput';
+        renderPreviewList(el.files, previewWrap);
+    }
+}
+
+</script>
+
+        <!-- Community Validation Queue -->
+        <div class="admin-table-wrap validation-table-wrap" id="section-validation" style="margin-top: 4px;">
+            <div style="padding: 16px 18px 0 18px;">
+                <h3 style="margin: 0; font-size: 17px; color: #0f172a;">Community User Validation</h3>
+                <p style="margin: 6px 0 0 0; font-size: 13px; color: #64748b;">Review residency proof and approve or reject applicants from your barangay.</p>
+            </div>
+            {% if pending_page and pending_page.paginator.count %}
+            <form id="bulkValidationForm" method="post" style="padding: 10px 18px 0 18px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+                {% csrf_token %}
+                <input type="hidden" name="action" id="bulkValidationAction" value="bulk_approve_users">
+                <div class="admin-bulk-actions">
+                    <button type="button" class="admin-filter-btn" onclick="submitBulkValidation('bulk_approve_users')">
+                        <i class="fas fa-check-double"></i> Bulk Approve
+                    </button>
+                    <button type="button" class="btn-danger" onclick="openBulkRejectModal()">
+                        <i class="fas fa-circle-xmark"></i> Bulk Reject
+                    </button>
+                </div>
+                <span class="admin-results-count" style="margin-left: auto;">Select one or more applicants below</span>
+            </form>
+            {% endif %}
+            {% if pending_page and pending_page.paginator.count %}
+            <table class="admin-table validation-table" style="margin-top: 10px;">
+                <colgroup>
+                    <col class="validation-col-select">
+                    <col class="validation-col-user">
+                    <col class="validation-col-email">
+                    <col class="validation-col-address">
+                    <col class="validation-col-barangay">
+                    <col class="validation-col-proof">
+                    <col class="validation-col-date">
+                    <col class="validation-col-action">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">
+                            <label style="display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
+                                <input type="checkbox" id="selectAllPending" onclick="toggleAllPending(this)">
+                            </label>
+                        </th>
+                        <th>User</th>
+                        <th>Email</th>
+                        <th>Address</th>
+                        <th>Barangay</th>
+                        <th>Proof</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for member in pending_page %}
+                    <tr class="admin-table-row">
+                        <td class="validation-select-cell">
+                            <input type="checkbox" name="profile_ids" class="pending-profile-checkbox" value="{{ member.id }}" form="bulkValidationForm">
+                        </td>
+                        <td>{{ member.user.username }}</td>
+                        <td>{{ member.user.email }}</td>
+                        <td>{{ member.address }}</td>
+                        <td>{{ member.barangay.name }}</td>
+                        <td class="validation-proof-cell">
+                            <div class="validation-proof-actions">
+                                <button
+                                    type="button"
+                                    class="admin-clear-btn open-proof-preview validation-tool-btn"
+                                    data-proof-url="{{ member.proof_of_residency.url }}"
+                                    data-proof-title="{{ member.user.username|escapejs }}"
+                                    data-proof-address="{{ member.address|escapejs }}"
+                                >
+                                    <i class="fas fa-image"></i> View Proof
+                                </button>
+                                <button type="button" class="admin-clear-btn open-email-preview validation-tool-btn" data-profile-id="{{ member.id }}">
+                                    <i class="fas fa-envelope"></i> Preview Email
+                                </button>
+                                <button type="button" class="admin-clear-btn resend-email validation-tool-btn" data-profile-id="{{ member.id }}">
+                                    <i class="fas fa-paper-plane"></i> Resend
+                                </button>
+                            </div>
+                        </td>
+                        <td class="validation-date-cell">{{ member.created_at|date:"M d, Y" }}</td>
+                        <td class="validation-action-cell">
+                            <div class="validation-review-actions">
+                                <form method="post" class="ajax-form validation-decision-form">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="approve_user">
+                                    <input type="hidden" name="profile_id" value="{{ member.id }}">
+                                    <button type="submit" class="admin-filter-btn validation-decision-btn">
+                                        <i class="fas fa-check"></i> Approve
+                                    </button>
+                                </form>
+                                <button
+                                    type="button"
+                                    class="btn-danger open-reject-modal validation-decision-btn"
+                                    data-id="{{ member.id }}"
+                                    data-username="{{ member.user.username|escapejs }}"
+                                >
+                                    <i class="fas fa-times"></i> Reject
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="validation-pager">
+                <div class="admin-results-count">Showing {{ pending_page.start_index }}-{{ pending_page.end_index }} of {{ pending_page.paginator.count }}</div>
+                <div class="validation-pager-actions">
+                    {% if pending_page.has_previous %}
+                    <a class="admin-clear-btn" href="?{% if base_query %}{{ base_query }}&{% endif %}pending_page={{ pending_page.previous_page_number }}">Prev</a>
+                    {% endif %}
+                    <span class="validation-page-count">Page {{ pending_page.number }} / {{ pending_page.paginator.num_pages }}</span>
+                    {% if pending_page.has_next %}
+                    <a class="admin-filter-btn" href="?{% if base_query %}{{ base_query }}&{% endif %}pending_page={{ pending_page.next_page_number }}">Next</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="admin-empty">
+                <i class="fas fa-user-check"></i>
+                <p>No pending community user validations for your barangay.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Validation Audit Log -->
+        <div class="admin-table-wrap" style="margin-top: 18px;">
+            <div style="padding: 16px 18px 0 18px;">
+                <h3 style="margin: 0; font-size: 17px; color: #0f172a;">Validation Audit Log</h3>
+                <p style="margin: 6px 0 0 0; font-size: 13px; color: #64748b;">Recent approvals and rejections for accountability.</p>
+            </div>
+            {% if reviewed_registrations %}
+            <table class="admin-table" style="margin-top: 10px;">
+                <thead>
+                    <tr>
+                        <th>When</th>
+                        <th>User</th>
+                        <th>Status</th>
+                        <th>Reviewer</th>
+                        <th>Reason</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for member in reviewed_registrations %}
+                    <tr>
+                        <td class="admin-date">{{ member.reviewed_at|date:"M d, Y" }}<br><small>{{ member.reviewed_at|timesince }} ago</small></td>
+                        <td>{{ member.user.username }}</td>
+                        <td>{{ member.get_status_display }}</td>
+                        <td>{% if member.reviewed_by %}{{ member.reviewed_by.username }}{% else %}System{% endif %}</td>
+                        <td>{{ member.review_notes|default:"No reason provided" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="admin-empty">
+                <i class="fas fa-clipboard-check"></i>
+                <p>No reviewed registrations yet.</p>
+            </div>
+            {% endif %}
+        </div>
+        <!-- ACTIVITY / AUDIT LOG -->
+        <div class="admin-table-wrap" id="section-bulletin" style="margin-top: 18px;">
+            <div style="padding: 16px 18px 0 18px;">
+                <h3 style="margin: 0; font-size: 17px; color: #0f172a;">Activity / Audit Log</h3>
+                <p style="margin: 6px 0 0 0; font-size: 13px; color: #64748b;">Recent actions by admins and system events for accountability.</p>
+            </div>
+            {% if activity_log %}
+            <table class="admin-table" style="margin-top: 10px;">
+                <thead>
+                    <tr>
+                        <th>When</th>
+                        <th>Action</th>
+                        <th>Actor</th>
+                        <th>Target</th>
+                        <th>Barangay</th>
+                        <th>Reason / Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in activity_log %}
+                    <tr>
+                        <td class="admin-date">{{ entry.created_at|date:"M d, Y" }}<br><small>{{ entry.created_at|timesince }} ago</small></td>
+                        <td>{{ entry.get_action_display }}</td>
+                        <td>{% if entry.actor %}{{ entry.actor.username }}{% else %}System{% endif %}</td>
+                        <td>{{ entry.target_repr|default:entry.target_type }}</td>
+                        <td>{% if entry.barangay %}{{ entry.barangay.name }}{% else %}-{% endif %}</td>
+                        <td style="max-width: 260px; white-space: normal;">{{ entry.reason|default:"-" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="admin-empty">
+                <i class="fas fa-history"></i>
+                <p>No recent activity recorded yet.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Barangay Bulletin -->
+        <div class="admin-table-wrap" style="margin-top: 18px;">
+            <div style="padding: 16px 18px 0 18px;">
+                <h3 style="margin: 0; font-size: 17px; color: #0f172a;">Barangay Bulletin</h3>
+                <p style="margin: 6px 0 0 0; font-size: 13px; color: #64748b;">Publish official announcements, advisories, and service updates for your barangay.</p>
+            </div>
+
+            {% if not admin_barangay and not user.is_superuser %}
+            <div class="admin-empty">
+                <i class="fas fa-bullhorn"></i>
+                <p>Please assign a barangay to your admin account before posting bulletins.</p>
+            </div>
+            {% else %}
+            <form method="post" enctype="multipart/form-data" class="admin-bulletin-form ajax-form">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="create_bulletin">
+                {% if not admin_barangay and user.is_superuser %}
+                <div class="admin-bulletin-row">
+                    <label class="admin-bulletin-label">Barangay</label>
+                    <select name="barangay_id" class="admin-filter-select" required>
+                        <option value="">Select barangay</option>
+                        {% for barangay in barangays %}
+                        <option value="{{ barangay.id }}">{{ barangay.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% else %}
+                <p class="admin-bulletin-note">Posting to <strong>{{ admin_barangay.name }}</strong></p>
+                {% endif %}
+
+                <div class="admin-bulletin-grid">
+                    <div class="admin-bulletin-field">
+                        <label class="admin-bulletin-label">Title</label>
+                        <input type="text" name="title" class="form-input" placeholder="Enter bulletin title" required>
+                    </div>
+                    <div class="admin-bulletin-field">
+                        <label class="admin-bulletin-label">Category</label>
+                        <select name="category" class="admin-filter-select" required>
+                            <option value="">Select category</option>
+                            {% for key, label in bulletin_categories %}
+                            <option value="{{ key }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="admin-bulletin-field">
+                        <label class="admin-bulletin-label">Priority</label>
+                        <select name="priority" class="admin-filter-select" required>
+                            {% for key, label in bulletin_priorities %}
+                            <option value="{{ key }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="admin-bulletin-field">
+                        <label class="admin-bulletin-label">Expiration (optional)</label>
+                        <input type="datetime-local" name="expires_at" class="form-input">
+                    </div>
+                    <div class="admin-bulletin-field">
+                        <label class="admin-bulletin-label">Attachments</label>
+                        <input type="file" id="bulletinAttachments" name="attachments" class="form-input" accept="image/*" multiple>
+                        <div style="font-size:12px; color:#94a3b8; margin-top:6px;">You can upload multiple images (max 6, 5MB each). They'll display inline for users.</div>
+                        <div id="bulletinAttachmentsPreview" style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;"></div>
+                    </div>
+                    <div class="admin-bulletin-field admin-bulletin-inline">
+                        <label class="admin-bulletin-label">Pin post</label>
+                        <label class="admin-bulletin-switch">
+                            <input type="checkbox" name="is_pinned">
+                            <span class="admin-bulletin-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="admin-bulletin-field" style="margin-top: 12px;">
+                    <label class="admin-bulletin-label">Content / Description</label>
+                    <textarea name="content" rows="4" class="form-input" placeholder="Write the official bulletin details..." required></textarea>
+                </div>
+                <div class="admin-bulletin-actions">
+                    <button type="submit" class="admin-filter-btn">
+                        <i class="fas fa-bullhorn"></i> Publish Bulletin
+                    </button>
+                </div>
+            </form>
+
+            <div class="admin-bulletin-list">
+                {% if bulletins %}
+                <form id="bulkResendForm" method="post" style="display: flex; align-items: center; justify-content: flex-end; margin-top: 10px;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="resend_urgent_bulk">
+                    <button type="submit" class="admin-filter-btn" style="padding: 7px 12px;">
+                        <i class="fas fa-paper-plane"></i> Resend Urgent (Email + SMS)
+                    </button>
+                </form>
+                <table class="admin-table" style="margin-top: 10px;">
+                    <thead>
+                        <tr>
+                            <th style="width: 54px;">Select</th>
+                            <th>Title</th>
+                            <th>Category</th>
+                            <th>Priority</th>
+                            <th>Expires</th>
+                            <th>Seen</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for post in bulletins %}
+                        <tr>
+                            <td>
+                                <input
+                                    type="checkbox"
+                                    name="bulletin_ids"
+                                    value="{{ post.id }}"
+                                    form="bulkResendForm"
+                                >
+                            </td>
+                            <td>
+                                <div class="admin-bulletin-title">
+                                    <span>{{ post.title }}</span>
+                                    {% if post.is_pinned %}
+                                    <span class="bulletin-badge bulletin-badge-pin"><i class="fas fa-thumbtack"></i> Pinned</span>
+                                    {% endif %}
+                                    {% if post.priority == 'urgent' %}
+                                    <span class="bulletin-badge bulletin-badge-urgent"><i class="fas fa-triangle-exclamation"></i> Urgent</span>
+                                    {% elif post.priority == 'important' %}
+                                    <span class="bulletin-badge bulletin-badge-important"><i class="fas fa-circle-exclamation"></i> Important</span>
+                                    {% endif %}
+                                </div>
+                                <p class="admin-bulletin-meta">Posted {{ post.created_at|date:"M d, Y" }}</p>
+                                {% with image_urls=post.display_image_urls n=post.display_image_urls|length %}
+                                    {% if n > 0 %}
+                                        {% if n > 4 %}
+                                            <div class="media-gallery media-many" data-count="{{ n }}">
+                                        {% elif n == 4 %}
+                                            <div class="media-gallery media-4">
+                                        {% elif n == 3 %}
+                                            <div class="media-gallery media-3">
+                                        {% elif n == 2 %}
+                                            <div class="media-gallery media-2">
+                                        {% else %}
+                                            <div class="media-gallery media-1">
+                                        {% endif %}
+                                        {% for image_url in image_urls %}
+                                            {% if forloop.counter == 4 and n > 4 %}
+                                                <img src="{{ image_url }}" alt="{{ post.title }}" class="media-item" data-full-url="{{ image_url }}" data-more="+{{ n|add:'-4' }}">
+                                            {% else %}
+                                                <img src="{{ image_url }}" alt="{{ post.title }}" class="media-item" data-full-url="{{ image_url }}">
+                                            {% endif %}
+                                        {% endfor %}
+                                        </div>
+                                    {% elif post.safe_attachment_url %}
+                                        <a href="{{ post.safe_attachment_url }}" target="_blank" class="admin-clear-btn compact-action-btn">Attachment</a>
+                                    {% endif %}
+                                {% endwith %}
+                            </td>
+                            <td>{{ post.get_category_display }}</td>
+                            <td>{{ post.get_priority_display }}</td>
+                            <td>{% if post.expires_at %}{{ post.expires_at|date:"M d, Y" }}{% else %}No expiry{% endif %}</td>
+                            <td>{{ post.seen_count }}</td>
+                            <td>
+                                <div class="admin-actions bulletin-row-actions">
+                                    <form method="post" class="ajax-form">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="toggle_bulletin_pin">
+                                        <input type="hidden" name="bulletin_id" value="{{ post.id }}">
+                                        <button type="submit" class="admin-clear-btn admin-table-action-btn">
+                                            {% if post.is_pinned %}<i class="fas fa-thumbtack"></i> Unpin{% else %}<i class="fas fa-thumbtack"></i> Pin{% endif %}
+                                        </button>
+                                    </form>
+                                    <button
+                                        type="button"
+                                        class="admin-clear-btn open-edit-bulletin"
+                                        data-id="{{ post.id }}"
+                                        data-title="{{ post.title|escapejs }}"
+                                        data-category="{{ post.category }}"
+                                        data-priority="{{ post.priority }}"
+                                        data-content="{{ post.content|escapejs }}"
+                                        data-expires="{% if post.expires_at %}{{ post.expires_at|date:'Y-m-d\\TH:i' }}{% endif %}"
+                                        data-attachment-url="{% if post.safe_attachment_url %}{{ post.safe_attachment_url }}{% endif %}"
+                                        data-attachment-name="{% if post.attachment %}{{ post.attachment.name }}{% endif %}"
+                                        data-pinned="{% if post.is_pinned %}1{% else %}0{% endif %}"
+                                    >
+                                        <i class="fas fa-pen"></i> Edit
+                                    </button>
+                                    <form method="post" class="ajax-form">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="delete_bulletin">
+                                        <input type="hidden" name="bulletin_id" value="{{ post.id }}">
+                                        <button type="submit" class="btn-danger admin-table-action-btn">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="admin-empty">
+                    <i class="fas fa-bullhorn"></i>
+                    <p>No bulletin posts yet. Create your first update above.</p>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        <!-- Bulletin Audit Trail -->
+        <div class="admin-table-wrap" style="margin-top: 18px;">
+            <div style="padding: 16px 18px 0 18px;">
+                <h3 style="margin: 0; font-size: 17px; color: #0f172a;">Bulletin Edit History</h3>
+                <p style="margin: 6px 0 0 0; font-size: 13px; color: #64748b;">Recent changes and urgent resend activity for bulletins in your barangay.</p>
+            </div>
+            {% if bulletin_history %}
+            <table class="admin-table" style="margin-top: 10px;">
+                <thead>
+                    <tr>
+                        <th>When</th>
+                        <th>Bulletin</th>
+                        <th>Action</th>
+                        <th>By</th>
+                        <th>Snapshot</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in bulletin_history %}
+                    <tr>
+                        <td class="admin-date">{{ entry.created_at|date:"M d, Y" }}<br><small>{{ entry.created_at|timesince }} ago</small></td>
+                        <td>
+                            <strong>{{ entry.title_snapshot }}</strong>
+                            <div class="admin-bulletin-meta">{{ entry.barangay.name }}</div>
+                        </td>
+                        <td>{{ entry.get_action_display }}</td>
+                        <td>{% if entry.changed_by %}{{ entry.changed_by.username }}{% else %}System{% endif %}</td>
+                        <td>{{ entry.content_snapshot|truncatechars:90 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="admin-empty">
+                <i class="fas fa-clipboard-list"></i>
+                <p>No bulletin history yet.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Filters & Search -->
+        <div class="admin-filters-bar">
+            <form method="get" class="admin-filters-form">
+                <input type="hidden" name="page" value="reports">
+                <div class="admin-search-wrap">
+                    <i class="fas fa-search admin-search-icon"></i>
+                    <input type="text" name="q" placeholder="Search by title, location, or user..."
+                           class="admin-search-input" value="{{ search_query }}">
+                </div>
+                <div class="admin-search-wrap">
+                    <i class="fas fa-user-check admin-search-icon"></i>
+                    <input type="text" name="pending_q" placeholder="Search pending (username, email, address)" class="admin-search-input" value="{{ pending_query }}">
+                </div>
+                <select name="status" class="admin-filter-select">
+                    <option value="">All Status</option>
+                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                    <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>In Progress</option>
+                    <option value="resolved" {% if status_filter == 'resolved' %}selected{% endif %}>Resolved</option>
+                </select>
+                <select name="priority" class="admin-filter-select">
+                    <option value="">All Priority</option>
+                    <option value="high" {% if priority_filter == 'high' %}selected{% endif %}>Urgent</option>
+                    <option value="medium" {% if priority_filter == 'medium' %}selected{% endif %}>Medium</option>
+                    <option value="low" {% if priority_filter == 'low' %}selected{% endif %}>Low</option>
+                </select>
+                <button type="submit" class="admin-filter-btn">
+                    <i class="fas fa-filter"></i> Filter
+                </button>
+                <a href="?export=reports&{{ request.GET.urlencode }}" class="admin-clear-btn" style="text-decoration:none;"> 
+                    <i class="fas fa-file-csv"></i> Export Reports
+                </a>
+                <a href="?export=registrations&{{ request.GET.urlencode }}" class="admin-clear-btn" style="text-decoration:none;"> 
+                    <i class="fas fa-file-csv"></i> Export Registrations
+                </a>
+                {% if status_filter or priority_filter or search_query or pending_query %}
+                <a href="{% url 'admin_dashboard' %}" class="admin-clear-btn">
+                    <i class="fas fa-times"></i> Clear
+                </a>
+                {% endif %}
+            </form>
+            <span class="admin-results-count">{{ reports|length }} report{{ reports|length|pluralize }} found</span>
+        </div>
+
+        <!-- Charts & Trends (compact line) -->
+        <div class="admin-analytics-card" id="section-analytics">
+            <h3 style="margin:0; font-size:14px;">Reports (last 7 days)</h3>
+            <div style="margin-top:8px; max-width:720px;">
+                <canvas id="reportsChart" style="width:100%; height:80px;"></canvas>
+            </div>
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            (function(){
+                try{
+                    var labels = {{ chart_labels|default:'[]'|safe }};
+                    var counts = {{ chart_counts|default:'[]'|safe }};
+                    var ctx = document.getElementById('reportsChart');
+                    if (ctx && labels && counts) {
+                        new Chart(ctx.getContext('2d'), {
+                            type: 'line',
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    label: 'Reports',
+                                    data: counts,
+                                    borderColor: 'rgba(37,99,235,1)',
+                                    backgroundColor: 'rgba(37,99,235,0.15)',
+                                    fill: true,
+                                    tension: 0.3,
+                                    pointRadius: 2,
+                                    pointHoverRadius: 4
+                                }]
+                            },
+                            options: {
+                                maintainAspectRatio: false,
+                                elements: { line: { borderWidth: 2 } },
+                                scales: { y: { beginAtZero: true } },
+                                plugins: { legend: { display: false } },
+                                responsive: true
+                            }
+                        });
+                    }
+                }catch(e){console.warn('chart error', e)}
+            })();
+        </script>
+
+        <script>
+            // make media galleries responsive and attach lightbox click handler
+            document.addEventListener('DOMContentLoaded', function(){
+                document.querySelectorAll('.media-gallery').forEach(function(g){
+                    const count = g.querySelectorAll('img.media-item').length;
+                    g.classList.add('media-'+Math.min(count||0, 4));
+                    g.classList.add(count > 4 ? 'media-many' : '');
+                    g.querySelectorAll('img.media-item').forEach(function(img){
+                        img.addEventListener('click', function(){
+                            const src = img.getAttribute('data-full-url') || img.src;
+                            const title = img.alt || '';
+                            const box = document.getElementById('proofLightbox');
+                            if(box){
+                                document.getElementById('proofLightboxImage').src = src;
+                                document.getElementById('proofLightboxTitle').textContent = title || 'Image';
+                                document.getElementById('proofLightboxCaption').textContent = title || '';
+                                box.setAttribute('aria-hidden','false');
+                                box.style.display = 'block';
+                            }
+                        });
+                    });
+                });
+                // lightbox close
+                const close = document.getElementById('proofLightboxClose');
+                if(close) close.addEventListener('click', function(){
+                    const box = document.getElementById('proofLightbox');
+                    box.setAttribute('aria-hidden','true');
+                    box.style.display = 'none';
+                    document.getElementById('proofLightboxImage').src = '';
+                });
+            });
+        </script>
+
+        <!-- Duplicate Report Groups -->
+        <div class="admin-table-wrap" style="margin-top: 12px;">
+            <div style="padding: 16px 18px 0 18px;">
+                <h3 style="margin: 0; font-size: 17px; color: #0f172a;">Top Duplicate Reports</h3>
+                <p style="margin: 6px 0 0 0; font-size: 13px; color: #64748b;">Grouped by matching title and location to help you prioritize trending issues.</p>
+            </div>
+            {% if duplicate_groups %}
+            <table class="admin-table" style="margin-top: 10px;">
+                <thead>
+                    <tr>
+                        <th>Report Title</th>
+                        <th>Location</th>
+                        <th>Count</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for group in duplicate_groups %}
+                    <tr>
+                        <td>{{ group.title }}</td>
+                        <td>{{ group.location }}</td>
+                        <td><span class="bulletin-badge bulletin-badge-urgent">{{ group.duplicate_count }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="admin-empty">
+                <i class="fas fa-layer-group"></i>
+                <p>No duplicate report clusters yet.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Reports Table -->
+        <div class="admin-table-wrap">
+            <a id="section-reports"></a>
+            {% if reports_page and reports_page.paginator.count %}
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Report</th>
+                        <th>Submitted By</th>
+                        <th>Priority</th>
+                        <th>Duplicates</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Admin Action</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for report in reports_page %}
+                    <tr class="admin-table-row" id="row-{{ report.id }}">
+                        <td class="admin-id">{{ report.id }}</td>
+                        <td class="admin-report-cell">
+                            <p class="admin-report-title">{{ report.title }}</p>
+                            <p class="admin-report-location"><i class="fas fa-map-marker-alt"></i> {{ report.location }}</p>
+                            {% if report.description %}
+                            <p class="admin-report-desc">{{ report.description|truncatechars:140 }}</p>
+                            {% endif %}
+                            {% with image_urls=report.display_image_urls n=report.display_image_urls|length %}
+                                {% if n > 0 %}
+                                    {% if n > 4 %}
+                                        <div class="media-gallery media-many" style="margin-top:8px;" data-count="{{ n }}">
+                                    {% elif n == 4 %}
+                                        <div class="media-gallery media-4" style="margin-top:8px;">
+                                    {% elif n == 3 %}
+                                        <div class="media-gallery media-3" style="margin-top:8px;">
+                                    {% elif n == 2 %}
+                                        <div class="media-gallery media-2" style="margin-top:8px;">
+                                    {% else %}
+                                        <div class="media-gallery media-1" style="margin-top:8px;">
+                                    {% endif %}
+                                    {% for image_url in image_urls %}
+                                        {% if forloop.counter == 4 and n > 4 %}
+                                            <img src="{{ image_url }}" alt="{{ report.title }}" class="media-item" data-full-url="{{ image_url }}" data-more="+{{ n|add:'-4' }}">
+                                        {% else %}
+                                            <img src="{{ image_url }}" alt="{{ report.title }}" class="media-item" data-full-url="{{ image_url }}">
+                                        {% endif %}
+                                    {% endfor %}
+                                    </div>
+                                {% endif %}
+                            {% endwith %}
+                        </td>
+                        <td>
+                            <div class="admin-user-cell">
+                                <div class="admin-mini-avatar">{{ report.user.username|first|upper }}</div>
+                                <span>{{ report.user.username }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            {% if report.priority == 'high' %}
+                            <span class="priority-badge priority-high"><i class="fas fa-exclamation-circle"></i> Urgent</span>
+                            {% elif report.priority == 'medium' %}
+                            <span class="priority-badge priority-medium"><i class="fas fa-minus-circle"></i> Medium</span>
+                            {% else %}
+                            <span class="priority-badge priority-low"><i class="fas fa-arrow-circle-down"></i> Low</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if report.duplicate_count > 1 %}
+                            <span class="bulletin-badge bulletin-badge-important">{{ report.duplicate_count }}</span>
+                            {% else %}
+                            <span class="admin-muted">1</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <form method="post" class="admin-status-form ajax-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="update_status">
+                                <input type="hidden" name="report_id" value="{{ report.id }}">
+                                <select name="status" class="admin-status-select status-select-{{ report.status }}" onchange="this.form.submit()">
+                                    <option value="pending" {% if report.status == 'pending' %}selected{% endif %}>Pending</option>
+                                    <option value="in_progress" {% if report.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                                    <option value="resolved" {% if report.status == 'resolved' %}selected{% endif %}>Resolved</option>
+                                </select>
+                            </form>
+                        </td>
+                        <td class="admin-date">{{ report.created_at|date:"M d, Y" }}<br><small>{{ report.created_at|timesince }} ago</small></td>
+                        <td class="admin-report-action-cell">
+                            <div class="admin-bulletin-meta report-action-meta">
+                                {% if report.latest_action_label %}
+                                <strong>{{ report.latest_action_label }}</strong>
+                                {% if report.latest_action_note %}
+                                <div>{{ report.latest_action_note|truncatechars:80 }}</div>
+                                {% endif %}
+                                {% else %}
+                                No action yet
+                                {% endif %}
+                            </div>
+                            <form method="post" class="admin-status-form ajax-form report-action-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="add_report_action">
+                                <input type="hidden" name="report_id" value="{{ report.id }}">
+                                <select name="report_action" class="admin-filter-select" required>
+                                    <option value="">Select action</option>
+                                    {% for key, label in report_action_choices %}
+                                    <option value="{{ key }}">{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                                <textarea name="action_note" rows="2" class="form-input report-action-note" placeholder="Add admin notes (optional)"></textarea>
+                                <button type="submit" class="admin-filter-btn admin-table-action-btn">
+                                    <i class="fas fa-paper-plane"></i> Save & Notify
+                                </button>
+                            </form>
+                        </td>
+                        <td>
+                            <div class="admin-actions report-row-actions">
+                                <button class="admin-btn-view"
+                                    data-id="{{ report.id }}"
+                                    data-title="{{ report.title|escapejs }}"
+                                    data-location="{{ report.location|escapejs }}"
+                                    data-description="{{ report.description|escapejs }}"
+                                    data-user="{{ report.user.username }}"
+                                    data-priority="{{ report.priority }}"
+                                    data-status="{{ report.status }}"
+                                    data-date="{{ report.created_at|date:'M d, Y' }}"
+                                    data-photo="{% if report.photo %}{{ report.photo.url }}{% endif %}"
+                                    title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+
+                                <form method="post" class="inline-assign-form ajax-form">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="assign_report">
+                                    <input type="hidden" name="report_id" value="{{ report.id }}">
+                                    <select name="assignee_id" class="admin-filter-select">
+                                        <option value="">Assign to...</option>
+                                        {% for admin in admin_users %}
+                                        <option value="{{ admin.id }}" {% if report.assigned_to and report.assigned_to.id == admin.id %}selected{% endif %}>{{ admin.username }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <button type="submit" class="admin-filter-btn">Assign</button>
+                                </form>
+
+                                <button class="admin-btn-delete"
+                                    data-id="{{ report.id }}"
+                                    data-title="{{ report.title|escapejs }}"
+                                    title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="admin-pager">
+                <div class="admin-results-count">Showing {{ reports_page.start_index }}-{{ reports_page.end_index }} of {{ reports_page.paginator.count }}</div>
+                <div class="admin-pager-actions">
+                    {% if reports_page.has_previous %}
+                    <a class="admin-clear-btn" href="?{% if base_query %}{{ base_query }}&{% endif %}reports_page={{ reports_page.previous_page_number }}">Prev</a>
+                    {% endif %}
+                    <span class="admin-page-count">Page {{ reports_page.number }} / {{ reports_page.paginator.num_pages }}</span>
+                    {% if reports_page.has_next %}
+                    <a class="admin-filter-btn" href="?{% if base_query %}{{ base_query }}&{% endif %}reports_page={{ reports_page.next_page_number }}">Next</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="admin-empty">
+                <i class="fas fa-inbox"></i>
+                <p>No reports found{% if status_filter or priority_filter or search_query or pending_query %} matching your filters{% endif %}.</p>
+                {% if status_filter or priority_filter or search_query or pending_query %}
+                <a href="{% url 'admin_dashboard' %}" class="admin-clear-btn" style="margin-top: 10px; display: inline-flex;">Clear filters</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+    </div><!-- end admin-main -->
+</div><!-- end admin-layout -->
+
+<!-- VIEW REPORT MODAL -->
+<div class="modal-overlay" id="viewModal">
+    <div class="modal-box" style="max-width: 580px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-eye" style="margin-right: 8px; color: #2563eb;"></i>Report Details</h3>
+            <button class="modal-close" onclick="closeViewModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div style="padding: 20px 24px;">
+            <div class="admin-detail-grid">
+                <div class="admin-detail-row">
+                    <span class="admin-detail-label"><i class="fas fa-heading"></i> Title</span>
+                    <span class="admin-detail-value" id="viewTitle"></span>
+                </div>
+                <div class="admin-detail-row">
+                    <span class="admin-detail-label"><i class="fas fa-user"></i> Submitted By</span>
+                    <span class="admin-detail-value" id="viewUser"></span>
+                </div>
+                <div class="admin-detail-row">
+                    <span class="admin-detail-label"><i class="fas fa-map-marker-alt"></i> Location</span>
+                    <span class="admin-detail-value" id="viewLocation"></span>
+                </div>
+                <div class="admin-detail-row">
+                    <span class="admin-detail-label"><i class="fas fa-calendar"></i> Date</span>
+                    <span class="admin-detail-value" id="viewDate"></span>
+                </div>
+                <div class="admin-detail-row">
+                    <span class="admin-detail-label"><i class="fas fa-flag"></i> Priority</span>
+                    <span class="admin-detail-value" id="viewPriority"></span>
+                </div>
+                <div class="admin-detail-row">
+                    <span class="admin-detail-label"><i class="fas fa-circle-dot"></i> Status</span>
+                    <span class="admin-detail-value" id="viewStatus"></span>
+                </div>
+            </div>
+            <div style="margin-top: 14px;">
+                <span class="admin-detail-label" style="display: block; margin-bottom: 6px;"><i class="fas fa-align-left"></i> Description</span>
+                <p id="viewDescription" style="font-size: 14px; color: #475569; background: #f8fafc; padding: 14px; border-radius: 10px; line-height: 1.6; margin: 0;"></p>
+            </div>
+                <div id="viewPhotoWrap" style="margin-top: 14px; display: none;">
+                <span class="admin-detail-label" style="display: block; margin-bottom: 6px;"><i class="fas fa-image"></i> Photo</span>
+                <img id="viewPhoto" src="" style="width: 100%; border-radius: 10px; display: block;">
+                <div id="viewPhotoCaption" style="margin-top:8px; font-size:13px; color:#64748b;"></div>
+                <div id="viewPhotoThumbnails" style="margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;"></div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeViewModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- IMAGE LIGHTBOX -->
+<div id="imageLightbox" style="display:none; position:fixed; inset:0; background:rgba(2,6,23,0.8); align-items:center; justify-content:center; z-index:1200;">
+    <button onclick="closeImageLightbox()" style="position:absolute; top:18px; right:18px; background:transparent; border:0; color:#fff; font-size:28px; cursor:pointer;">×</button>
+    <button id="lightPrev" onclick="imageLightboxPrev()" style="position:absolute; left:18px; top:50%; transform:translateY(-50%); background:transparent; border:0; color:#fff; font-size:36px; cursor:pointer;">‹</button>
+    <img id="lightboxImage" src="" style="max-width:92%; max-height:86%; border-radius:8px; box-shadow:0 10px 30px rgba(0,0,0,0.6);">
+    <div id="lightboxCaption" style=""></div>
+    <button id="lightNext" onclick="imageLightboxNext()" style="position:absolute; right:18px; top:50%; transform:translateY(-50%); background:transparent; border:0; color:#fff; font-size:36px; cursor:pointer;">›</button>
+</div>
+
+<!-- REJECT REASON MODAL -->
+<div class="modal-overlay" id="rejectModal">
+    <div class="modal-box modal-box-sm">
+        <div class="modal-header">
+            <h3><i class="fas fa-circle-xmark" style="margin-right: 8px; color: #dc2626;"></i>Reject Community User</h3>
+            <button class="modal-close" onclick="closeRejectModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <p class="modal-desc">Provide a reason before rejecting <strong id="rejectUsername"></strong>.</p>
+        <form method="post" id="rejectForm" class="ajax-form">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="reject_user">
+            <input type="hidden" name="profile_id" id="rejectProfileId">
+            <div class="form-group" style="margin-top: 12px;">
+                <label class="field-label">Reject Reason</label>
+                <textarea
+                    name="review_notes"
+                    id="rejectReasonInput"
+                    rows="4"
+                    required
+                    class="form-input"
+                    placeholder="Explain why this registration was declined..."
+                    style="resize: vertical;"
+                ></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeRejectModal()">Cancel</button>
+                <button type="submit" class="btn-danger"><i class="fas fa-times" style="margin-right: 6px;"></i>Reject</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- BULK REJECT MODAL -->
+<div class="modal-overlay" id="bulkRejectModal">
+    <div class="modal-box modal-box-sm">
+        <div class="modal-header">
+            <h3><i class="fas fa-circle-xmark" style="margin-right: 8px; color: #dc2626;"></i>Bulk Reject Community Users</h3>
+            <button class="modal-close" onclick="closeBulkRejectModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <p class="modal-desc" id="bulkRejectCount">Provide one shared reason for the selected community users.</p>
+        <form method="post" id="bulkRejectForm">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="bulk_reject_users">
+            <div id="bulkRejectProfileInputs"></div>
+            <div class="form-group" style="margin-top: 12px;">
+                <label class="field-label">Reject Reason</label>
+                <textarea
+                    name="review_notes"
+                    id="bulkRejectReasonInput"
+                    rows="4"
+                    required
+                    class="form-input"
+                    placeholder="Explain the shared reason for rejection..."
+                    style="resize: vertical;"
+                ></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeBulkRejectModal()">Cancel</button>
+                <button type="submit" class="btn-danger"><i class="fas fa-times" style="margin-right: 6px;"></i>Reject Selected</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- PROOF PREVIEW MODAL -->
+<div class="modal-overlay" id="proofPreviewModal">
+    <div class="modal-box" style="max-width: 700px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-image" style="margin-right: 8px; color: #2563eb;"></i>Proof of Residency</h3>
+            <button class="modal-close" onclick="closeProofPreviewModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div style="padding: 20px 24px;">
+            <p class="admin-bulletin-meta" id="proofPreviewMeta" style="margin-bottom: 10px;"></p>
+            <img id="proofPreviewImage" src="" alt="Proof of residency" style="width: 100%; border-radius: 12px; display: block; border: 1px solid #e2e8f0;">
+        </div>
+        <div class="modal-footer">
+            <a id="proofPreviewOpenLink" href="#" target="_blank" class="admin-clear-btn" style="text-decoration: none;">Open Full Image</a>
+            <button type="button" class="btn-cancel" onclick="closeProofPreviewModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- EDIT BULLETIN MODAL -->
+<div class="modal-overlay" id="editBulletinModal">
+    <div class="modal-box" style="max-width: 640px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-pen" style="margin-right: 8px; color: #2563eb;"></i>Edit Bulletin Post</h3>
+            <button class="modal-close" onclick="closeEditBulletinModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <form method="post" enctype="multipart/form-data" style="padding: 20px 24px;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="edit_bulletin">
+            <input type="hidden" name="bulletin_id" id="editBulletinId">
+
+            <div class="admin-bulletin-grid" style="margin-bottom: 12px;">
+                <div class="admin-bulletin-field">
+                    <label class="admin-bulletin-label">Title</label>
+                    <input type="text" name="title" id="editBulletinTitle" class="form-input" required>
+                </div>
+                <div class="admin-bulletin-field">
+                    <label class="admin-bulletin-label">Category</label>
+                    <select name="category" id="editBulletinCategory" class="admin-filter-select" required>
+                        <option value="">Select category</option>
+                        {% for key, label in bulletin_categories %}
+                        <option value="{{ key }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="admin-bulletin-field">
+                    <label class="admin-bulletin-label">Priority</label>
+                    <select name="priority" id="editBulletinPriority" class="admin-filter-select" required>
+                        {% for key, label in bulletin_priorities %}
+                        <option value="{{ key }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="admin-bulletin-field">
+                    <label class="admin-bulletin-label">Expiration (optional)</label>
+                    <input type="datetime-local" name="expires_at" id="editBulletinExpires" class="form-input">
+                </div>
+                <div class="admin-bulletin-field">
+                    <label class="admin-bulletin-label">Attachment</label>
+                    <input type="file" name="attachment" class="form-input">
+                    <div id="editBulletinAttachment" class="admin-bulletin-meta" style="margin-top: 6px;"></div>
+                    <label class="admin-bulletin-label" style="margin-top: 6px;">
+                        <input type="checkbox" name="remove_attachment"> Remove current attachment
+                    </label>
+                </div>
+                <div class="admin-bulletin-field admin-bulletin-inline">
+                    <label class="admin-bulletin-label">Pin post</label>
+                    <label class="admin-bulletin-switch">
+                        <input type="checkbox" name="is_pinned" id="editBulletinPinned">
+                        <span class="admin-bulletin-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="admin-bulletin-field" style="margin-bottom: 8px;">
+                <label class="admin-bulletin-label">Content / Description</label>
+                <textarea name="content" id="editBulletinContent" rows="4" class="form-input" required></textarea>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeEditBulletinModal()">Cancel</button>
+                <button type="submit" class="admin-filter-btn"><i class="fas fa-save"></i> Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- DELETE CONFIRM MODAL -->
+<div class="modal-overlay" id="adminDeleteModal">
+    <div class="modal-box modal-box-sm">
+        <div class="modal-header">
+            <h3><i class="fas fa-trash" style="margin-right: 8px; color: #dc2626;"></i>Delete Report</h3>
+            <button class="modal-close" onclick="closeAdminDeleteModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <p class="modal-desc">Are you sure you want to delete <strong id="adminDeleteTitle"></strong>? This cannot be undone.</p>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="delete_report">
+            <input type="hidden" name="report_id" id="adminDeleteId">
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeAdminDeleteModal()">Cancel</button>
+                <button type="submit" class="btn-danger"><i class="fas fa-trash" style="margin-right: 6px;"></i>Delete</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const statusLabels = { pending: 'Pending', in_progress: 'In Progress', resolved: 'Resolved' };
+const priorityLabels = { high: 'Urgent', medium: 'Medium', low: 'Low' };
+
+function openViewModal(btn) {
+    document.getElementById('viewTitle').textContent = btn.dataset.title;
+    document.getElementById('viewUser').textContent = btn.dataset.user;
+    document.getElementById('viewLocation').textContent = btn.dataset.location;
+    document.getElementById('viewDate').textContent = btn.dataset.date;
+    document.getElementById('viewDescription').textContent = btn.dataset.description;
+    document.getElementById('viewPriority').textContent = priorityLabels[btn.dataset.priority] || btn.dataset.priority;
+    document.getElementById('viewStatus').textContent = statusLabels[btn.dataset.status] || btn.dataset.status;
+    const photoWrap = document.getElementById('viewPhotoWrap');
+    // try to find inline images in the report row first (collect {src, caption})
+    const rid = btn.dataset.id;
+    let images = [];
+    if(rid){
+        const row = document.getElementById('row-'+rid);
+        if(row){
+            row.querySelectorAll('.media-gallery img.media-item').forEach(function(i){
+                images.push({ src: i.getAttribute('data-full-url') || i.src, caption: i.alt || btn.dataset.title || '' });
+            });
+        }
+    }
+    // fallback to single data-photo
+    if(images.length === 0 && btn.dataset.photo){ images.push({ src: btn.dataset.photo, caption: btn.dataset.title || '' }); }
+
+    if(images.length){
+        document.getElementById('viewPhoto').src = images[0].src;
+        // thumbnails
+        const thumbs = document.getElementById('viewPhotoThumbnails');
+        thumbs.innerHTML = '';
+        images.forEach(function(item, idx){
+            const t = document.createElement('img');
+            t.src = item.src; t.style.width = '64px'; t.style.height = '48px'; t.style.objectFit='cover'; t.style.borderRadius='6px'; t.style.cursor='pointer';
+            t.title = item.caption || '';
+            t.addEventListener('click', function(){ openImageLightbox(images, idx); });
+            thumbs.appendChild(t);
+        });
+        // Allow clicking main image to open lightbox at first image
+        const mainImg = document.getElementById('viewPhoto');
+        mainImg.src = images[0].src;
+        mainImg.style.cursor = 'pointer';
+        mainImg.onclick = function(){ openImageLightbox(images, 0); };
+        // set modal caption area (below main photo)
+        const captionEl = document.getElementById('viewPhotoCaption');
+        if(captionEl) captionEl.textContent = images[0].caption || '';
+        photoWrap.style.display = 'block';
+    } else {
+        photoWrap.style.display = 'none';
+    }
+    document.getElementById('viewModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeViewModal() {
+    document.getElementById('viewModal').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+function openRejectModal(id, username) {
+    document.getElementById('rejectProfileId').value = id;
+    document.getElementById('rejectUsername').textContent = username;
+    document.getElementById('rejectReasonInput').value = '';
+    document.getElementById('rejectModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeRejectModal() {
+    document.getElementById('rejectModal').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+function toggleAllPending(source) {
+    document.querySelectorAll('.pending-profile-checkbox').forEach(checkbox => {
+        checkbox.checked = source.checked;
+    });
+}
+
+function getSelectedPendingProfileIds() {
+    return Array.from(document.querySelectorAll('.pending-profile-checkbox:checked')).map(checkbox => checkbox.value);
+}
+
+function submitBulkValidation(action) {
+    const selectedIds = getSelectedPendingProfileIds();
+    if (!selectedIds.length) {
+        alert('Select at least one community user first.');
+        return;
+    }
+
+    const form = document.getElementById('bulkValidationForm');
+    const actionInput = document.getElementById('bulkValidationAction');
+    actionInput.value = action;
+
+    form.submit();
+}
+
+function openBulkRejectModal() {
+    const selectedIds = getSelectedPendingProfileIds();
+    if (!selectedIds.length) {
+        alert('Select at least one community user first.');
+        return;
+    }
+
+    const inputsWrap = document.getElementById('bulkRejectProfileInputs');
+    inputsWrap.innerHTML = '';
+    selectedIds.forEach(id => {
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'profile_ids';
+        hiddenInput.value = id;
+        inputsWrap.appendChild(hiddenInput);
+    });
+
+    document.getElementById('bulkRejectCount').textContent = `${selectedIds.length} selected community user(s). Provide one shared reason.`;
+    document.getElementById('bulkRejectReasonInput').value = '';
+    document.getElementById('bulkRejectModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeBulkRejectModal() {
+    document.getElementById('bulkRejectModal').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+function openProofPreview(btn) {
+    const imageUrl = btn.dataset.proofUrl;
+    const title = btn.dataset.proofTitle || 'Community user';
+    const address = btn.dataset.proofAddress || '';
+    document.getElementById('proofPreviewImage').src = imageUrl;
+    document.getElementById('proofPreviewOpenLink').href = imageUrl;
+    document.getElementById('proofPreviewMeta').textContent = `${title}${address ? ' · ' + address : ''}`;
+    document.getElementById('proofPreviewModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+// Lightbox support
+let _lbImages = [];
+let _lbIndex = 0;
+function openImageLightbox(images, index){
+    if(!images || !images.length) return;
+    // images may be array of {src, caption} or strings
+    _lbImages = images.map(function(it){ return (typeof it === 'string') ? {src: it, caption: ''} : it; });
+    _lbIndex = parseInt(index) || 0;
+    const img = document.getElementById('lightboxImage');
+    img.src = _lbImages[_lbIndex].src;
+    const caption = document.getElementById('lightboxCaption');
+    if(caption) caption.textContent = _lbImages[_lbIndex].caption || '';
+    const box = document.getElementById('imageLightbox');
+    box.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', _imageLightboxKey);
+}
+function closeImageLightbox(){
+    const box = document.getElementById('imageLightbox');
+    box.style.display = 'none';
+    document.body.style.overflow = '';
+    document.removeEventListener('keydown', _imageLightboxKey);
+}
+function imageLightboxNext(){ if(!_lbImages.length) return; _lbIndex = (_lbIndex+1)%_lbImages.length; document.getElementById('lightboxImage').src = _lbImages[_lbIndex]; }
+function imageLightboxPrev(){ if(!_lbImages.length) return; _lbIndex = (_lbIndex-1+_lbImages.length)%_lbImages.length; document.getElementById('lightboxImage').src = _lbImages[_lbIndex]; }
+function _imageLightboxKey(e){ if(e.key === 'Escape') closeImageLightbox(); if(e.key === 'ArrowRight') imageLightboxNext(); if(e.key === 'ArrowLeft') imageLightboxPrev(); }
+document.getElementById('imageLightbox')?.addEventListener('click', function(e){ if(e.target === this) closeImageLightbox(); });
+// update caption on next/prev
+function _updateLightboxCaption(){ const c = document.getElementById('lightboxCaption'); if(!c) return; c.textContent = (_lbImages[_lbIndex] && _lbImages[_lbIndex].caption) ? _lbImages[_lbIndex].caption : ''; }
+const _orig_imageLightboxNext = imageLightboxNext; const _orig_imageLightboxPrev = imageLightboxPrev;
+imageLightboxNext = function(){ _orig_imageLightboxNext(); _updateLightboxCaption(); };
+imageLightboxPrev = function(){ _orig_imageLightboxPrev(); _updateLightboxCaption(); };
+
+function closeProofPreviewModal() {
+    document.getElementById('proofPreviewModal').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+function openAdminDeleteModal(id, title) {
+    document.getElementById('adminDeleteId').value = id;
+    document.getElementById('adminDeleteTitle').textContent = '"' + title + '"';
+    document.getElementById('adminDeleteModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeAdminDeleteModal() {
+    document.getElementById('adminDeleteModal').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+function openEditBulletinModal(btn) {
+    document.getElementById('editBulletinId').value = btn.dataset.id;
+    document.getElementById('editBulletinTitle').value = btn.dataset.title || '';
+    document.getElementById('editBulletinCategory').value = btn.dataset.category || '';
+    document.getElementById('editBulletinPriority').value = btn.dataset.priority || 'normal';
+    document.getElementById('editBulletinContent').value = btn.dataset.content || '';
+    document.getElementById('editBulletinExpires').value = btn.dataset.expires || '';
+    document.getElementById('editBulletinPinned').checked = btn.dataset.pinned === '1';
+
+    const attachmentWrap = document.getElementById('editBulletinAttachment');
+    if (btn.dataset.attachmentUrl) {
+        const name = btn.dataset.attachmentName || 'Attachment';
+        attachmentWrap.innerHTML = `<a href="${btn.dataset.attachmentUrl}" target="_blank">${name}</a>`;
+    } else {
+        attachmentWrap.innerHTML = 'No attachment.';
+    }
+
+    document.getElementById('editBulletinModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeEditBulletinModal() {
+    document.getElementById('editBulletinModal').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+// Event delegation
+document.addEventListener('click', function(e) {
+    const viewBtn = e.target.closest('.admin-btn-view');
+    if (viewBtn) { openViewModal(viewBtn); return; }
+
+    const rejectBtn = e.target.closest('.open-reject-modal');
+    if (rejectBtn) { openRejectModal(rejectBtn.dataset.id, rejectBtn.dataset.username); return; }
+
+    const proofBtn = e.target.closest('.open-proof-preview');
+    if (proofBtn) { openProofPreview(proofBtn); return; }
+
+    const emailPreviewBtn = e.target.closest('.open-email-preview');
+    if (emailPreviewBtn) {
+        const pid = emailPreviewBtn.dataset.profileId;
+        fetch(`/preview-membership-email/${pid}/`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.subject) {
+                    document.getElementById('emailPreviewSubject').textContent = data.subject;
+                    document.getElementById('emailPreviewBody').textContent = data.body;
+                    document.getElementById('emailResendBtn').dataset.profileId = pid;
+                    document.getElementById('emailPreviewModal').classList.add('open');
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    alert('Unable to load preview.');
+                }
+            }).catch(() => alert('Unable to load preview.'));
+        return;
+    }
+
+    const resendBtn = e.target.closest('.resend-email');
+    if (resendBtn) {
+        const pid = resendBtn.dataset.profileId;
+        if (!confirm('Resend membership decision email to this user?')) return;
+        fetch('/resend-membership-email/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: `profile_id=${encodeURIComponent(pid)}`
+        }).then(r => r.json()).then(resp => {
+            if (resp.ok) {
+                alert('Email resent successfully.');
+            } else {
+                alert('Failed to resend email.');
+            }
+        }).catch(() => alert('Failed to resend email.'));
+        return;
+    }
+
+    const editBulletinBtn = e.target.closest('.open-edit-bulletin');
+    if (editBulletinBtn) { openEditBulletinModal(editBulletinBtn); return; }
+
+    const delBtn = e.target.closest('.admin-btn-delete');
+    if (delBtn) { openAdminDeleteModal(delBtn.dataset.id, delBtn.dataset.title); return; }
+
+    const viewModal = document.getElementById('viewModal');
+    const rejectModal = document.getElementById('rejectModal');
+    const bulkRejectModal = document.getElementById('bulkRejectModal');
+    const proofPreviewModal = document.getElementById('proofPreviewModal');
+    const delModal = document.getElementById('adminDeleteModal');
+    const editModal = document.getElementById('editBulletinModal');
+    if (viewModal && e.target === viewModal) closeViewModal();
+    if (rejectModal && e.target === rejectModal) closeRejectModal();
+    if (bulkRejectModal && e.target === bulkRejectModal) closeBulkRejectModal();
+    if (proofPreviewModal && e.target === proofPreviewModal) closeProofPreviewModal();
+    if (delModal && e.target === delModal) closeAdminDeleteModal();
+    if (editModal && e.target === editModal) closeEditBulletinModal();
+});
+
+// Email preview modal buttons
+document.getElementById('emailPreviewClose').addEventListener('click', function(){
+    document.getElementById('emailPreviewModal').classList.remove('open');
+    document.body.style.overflow = '';
+});
+document.getElementById('emailCloseBtn').addEventListener('click', function(){
+    document.getElementById('emailPreviewModal').classList.remove('open');
+    document.body.style.overflow = '';
+});
+document.getElementById('emailResendBtn').addEventListener('click', function(){
+    const pid = this.dataset.profileId;
+    if (!pid) return;
+    fetch('/resend-membership-email/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: `profile_id=${encodeURIComponent(pid)}`
+    }).then(r => r.json()).then(resp => {
+        if (resp.ok) {
+            alert('Email resent successfully.');
+            document.getElementById('emailPreviewModal').classList.remove('open');
+            document.body.style.overflow = '';
+        } else {
+            alert('Failed to resend email.');
+        }
+    }).catch(() => alert('Failed to resend email.'));
+});
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closeViewModal(); closeRejectModal(); closeBulkRejectModal(); closeProofPreviewModal(); closeAdminDeleteModal(); closeEditBulletinModal(); }
+});
+
+function hideDashboardSkeleton() {
+    document.documentElement.classList.remove('dashboard-loading');
+    document.documentElement.classList.add('dashboard-loaded');
+}
+
+if (document.readyState === 'complete') {
+    hideDashboardSkeleton();
+} else {
+    window.addEventListener('load', hideDashboardSkeleton, { once: true });
+}
+
+// Auto-dismiss alerts
+document.querySelectorAll('.admin-alert').forEach(a => {
+    setTimeout(() => { a.style.opacity = '0'; setTimeout(() => a.remove(), 400); }, 4000);
+});
+</script>
+{% endblock %}

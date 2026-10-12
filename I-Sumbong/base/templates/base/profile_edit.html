@@ -1,0 +1,112 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block full_content %}
+<div class="account-edit-shell">
+    <div class="form-page-card profile-edit-card account-edit-card">
+        <div class="form-page-header profile-edit-hero">
+            <a href="{% url 'home' %}?page=profile" class="btn-modern detail-back-btn">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+            <div class="account-edit-avatar">
+                {% if profile.avatar %}
+                    <img src="{{ profile.avatar.url }}" alt="{{ request.user.username }} avatar">
+                {% else %}
+                    {{ request.user.username|first|upper }}
+                {% endif %}
+            </div>
+            <div>
+                <span class="resident-hero-eyebrow"><i class="fas fa-id-card"></i> Resident Account</span>
+                <h3>Edit Profile</h3>
+                <p>{{ profile.barangay.name|default:"Community resident" }}</p>
+            </div>
+            <div class="account-edit-hero-meta">
+                <span><i class="fas fa-shield-halved"></i> {{ profile.get_status_display|default:"Active" }}</span>
+                <span><i class="fas fa-calendar"></i> Joined {{ request.user.date_joined|date:"M Y" }}</span>
+            </div>
+        </div>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-page-body account-edit-body">
+                <div class="account-edit-summary">
+                    <div>
+                        <span>Resident Ledger</span>
+                        <strong>{{ request.user.username }}</strong>
+                    </div>
+                    <div>
+                        <span>Territory</span>
+                        <strong>{{ profile.barangay.name|default:"Not set" }}</strong>
+                    </div>
+                    <div>
+                        <span>Residency Proof</span>
+                        <strong>{% if profile.proof_of_residency %}Uploaded{% else %}Needed{% endif %}</strong>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="field-label">Address</label>
+                    <div class="input-field-wrapper">
+                        <i class="fas fa-house-user input-icon"></i>
+                        <input type="text" name="address" class="form-input" value="{{ profile.address }}" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="field-label">Phone Number</label>
+                    <div class="input-field-wrapper">
+                        <i class="fas fa-phone input-icon"></i>
+                        <input type="text" name="phone_number" class="form-input" value="{{ profile.phone_number }}">
+                    </div>
+                </div>
+
+                <div class="form-group account-upload-field">
+                    <label class="field-label">Avatar</label>
+                    <div class="account-upload-panel">
+                        {% if profile.avatar %}
+                            <div class="profile-preview-box">
+                                <img src="{{ profile.avatar.url }}" alt="Current avatar">
+                            </div>
+                        {% else %}
+                            <div class="profile-preview-box profile-preview-empty">
+                                <i class="fas fa-user"></i>
+                                <span>No avatar yet</span>
+                            </div>
+                        {% endif %}
+                        <div class="account-upload-copy">
+                            <p>Profile photo</p>
+                            <input type="file" name="avatar" class="form-input" accept="image/*">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group account-upload-field">
+                    <label class="field-label">Proof of Residency</label>
+                    <div class="account-upload-panel">
+                        {% if profile.proof_of_residency %}
+                            <div class="profile-preview-box">
+                                <img src="{{ profile.proof_of_residency.url }}" alt="Current proof of residency">
+                            </div>
+                        {% else %}
+                            <div class="profile-preview-box profile-preview-empty">
+                                <i class="fas fa-file-image"></i>
+                                <span>No proof uploaded</span>
+                            </div>
+                        {% endif %}
+                        <div class="account-upload-copy">
+                            <p>Residency verification</p>
+                            <input type="file" name="proof_of_residency" class="form-input" accept="image/*">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-action-row">
+                    <button type="submit" class="btn-modern btn-login form-submit-btn">
+                        <i class="fas fa-floppy-disk"></i> Save Profile
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

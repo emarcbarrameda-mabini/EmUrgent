@@ -1,0 +1,182 @@
+{# Shared admin modals included into base.html to avoid duplication #}
+
+<!-- Demote Confirmation Modal -->
+<div class="modal-overlay" id="demoteConfirmModal" aria-hidden="true">
+    <div class="modal-box modal-box-sm">
+        <div class="modal-header">
+            <h3><i class="fas fa-user-slash" style="margin-right:8px;color:#dc2626"></i>Confirm Demote</h3>
+            <button class="modal-close" onclick="closeDemoteModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <p class="modal-desc">Are you sure you want to demote <strong id="demoteUsername"></strong> from barangay admin?</p>
+        <form method="post" id="demoteForm" class="ajax-form">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="demote_barangay_admin">
+            <input type="hidden" name="user_id" id="demoteUserId">
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeDemoteModal()">Cancel</button>
+                <button type="submit" class="btn-danger">Demote</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Promote Modal -->
+<div class="modal-overlay" id="promoteModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3><i class="fas fa-user-plus" style="margin-right:8px;color:#10b981"></i>Promote to Barangay Admin</h3>
+            <button class="modal-close" onclick="closePromoteModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <form method="post" id="promoteModalForm" class="ajax-form">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="promote_to_barangay_admin">
+            <div class="form-group">
+                <label class="field-label">User</label>
+                <input list="promotableUsersList" name="user_id" placeholder="Type username to search users" class="form-input" autocomplete="off" required>
+                <small class="upload-hint">Suggestions show the username and email so you can pick the right person quickly.</small>
+            </div>
+            {% if not admin_barangay %}
+            <div class="form-group">
+                <label class="field-label">Barangay</label>
+                <select name="barangay_id" class="form-input" required>
+                    <option value="">Select barangay</option>
+                    {% for b in barangays %}
+                    <option value="{{ b.id }}">{{ b.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% else %}
+            <input type="hidden" name="barangay_id" value="{{ admin_barangay.id }}">
+            {% endif %}
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closePromoteModal()">Cancel</button>
+                <button type="submit" class="btn-modern">Promote</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Create Bulletin Modal -->
+<div class="modal-overlay" id="createBulletinModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3><i class="fas fa-scroll" style="margin-right:8px;color:#2563eb"></i>Create Bulletin</h3>
+            <button class="modal-close" onclick="closeCreateBulletin()"><i class="fas fa-times"></i></button>
+        </div>
+        <form method="post" enctype="multipart/form-data" id="createBulletinForm" class="ajax-form">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create_bulletin">
+            {% if not admin_barangay and user.is_superuser %}
+            <div class="form-group">
+                <label class="field-label">Barangay</label>
+                <select name="barangay_id" class="form-input">
+                    <option value="">Select barangay</option>
+                    {% for barangay in barangays %}
+                    <option value="{{ barangay.id }}">{{ barangay.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+            <div class="form-group">
+                <label class="field-label">Title</label>
+                <input type="text" name="title" class="form-input" required>
+            </div>
+            <div class="form-group">
+                <label class="field-label">Category</label>
+                <select name="category" class="form-input">
+                    <option value="">Select</option>
+                    {% for key, label in bulletin_categories %}
+                    <option value="{{ key }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="field-label">Priority</label>
+                <select name="priority" class="form-input">
+                    {% for key, label in bulletin_priorities %}
+                    <option value="{{ key }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="field-label">Content</label>
+                <textarea name="content" rows="4" class="form-input" required></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeCreateBulletin()">Cancel</button>
+                <button type="submit" class="btn-modern">Publish</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Validation Quick Modal -->
+<div class="modal-overlay" id="validationQuickModal">
+    <div class="modal-box modal-box-sm">
+        <div class="modal-header">
+            <h3><i class="fas fa-users" style="margin-right:8px;color:#7c3aed"></i>Validation Queue</h3>
+            <button class="modal-close" onclick="closeValidationQuick()"><i class="fas fa-times"></i></button>
+        </div>
+        <div style="padding:12px 18px;">
+            <p style="margin:0 0 8px 0;">Pending validations: <strong>{% if pending_page and pending_page.paginator.count %}{{ pending_page.paginator.count }}{% else %}0{% endif %}</strong></p>
+            <a href="#" onclick="document.querySelector('#pageValidationLink')?.click(); return false;" class="admin-filter-btn">Open Validation Section</a>
+        </div>
+    </div>
+</div>
+
+<!-- View Report Modal -->
+<div class="modal-overlay" id="viewModal">
+    <div class="modal-box" style="max-width: 580px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-eye" style="margin-right: 8px; color: #2563eb;"></i>Report Details</h3>
+            <button class="modal-close" onclick="closeViewModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div style="padding: 20px 24px;">
+            <div class="admin-detail-grid">
+                <div class="admin-detail-row">
+                    <span class="admin-detail-label"><i class="fas fa-heading"></i> Title</span>
+                    <span class="admin-detail-value" id="viewTitle"></span>
+                </div>
+                <div class="admin-detail-row">
+                    <span class="admin-detail-label"><i class="fas fa-user"></i> Submitted By</span>
+                    <span class="admin-detail-value" id="viewUser"></span>
+                </div>
+                <div class="admin-detail-row">
+                    <span class="admin-detail-label"><i class="fas fa-map-marker-alt"></i> Location</span>
+                    <span class="admin-detail-value" id="viewLocation"></span>
+                </div>
+                <div class="admin-detail-row">
+                    <span class="admin-detail-label"><i class="fas fa-info"></i> Description</span>
+                    <span class="admin-detail-value" id="viewDescription"></span>
+                </div>
+                <div class="admin-detail-row">
+                    <span class="admin-detail-label"><i class="fas fa-clock"></i> Date</span>
+                    <span class="admin-detail-value" id="viewDate"></span>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-modern" onclick="closeViewModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Admin Delete Modal (generic) -->
+<div class="modal-overlay" id="adminDeleteModal">
+    <div class="modal-box modal-box-sm">
+        <div class="modal-header">
+            <h3><i class="fas fa-trash" style="margin-right: 8px; color: #dc2626;"></i>Confirm Delete</h3>
+            <button class="modal-close" onclick="closeAdminDeleteModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <p class="modal-desc">Are you sure you want to delete <strong id="adminDeleteTarget"></strong>? This action cannot be undone.</p>
+        <form method="post" id="adminDeleteForm" class="ajax-form">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="delete_bulletin">
+            <input type="hidden" name="bulletin_id" id="adminDeleteBulletinId">
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeAdminDeleteModal()">Cancel</button>
+                <button type="submit" class="btn-danger">Delete</button>
+            </div>
+        </form>
+    </div>
+</div>

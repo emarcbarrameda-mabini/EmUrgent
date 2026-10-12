@@ -1,0 +1,1166 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block main_class %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block full_content %}
+<div class="dashboard-layout resident-dashboard">
+    <aside class="sidenav" id="sidenav">
+        <div class="sidenav-header">
+            <div class="sidenav-brand" onclick="expandIfCollapsed()" style="cursor:pointer;" title="Expand">
+                <span class="sidenav-brand-mark"><i class="fas fa-bullhorn"></i></span>
+                <span class="sidenav-brand-text">
+                    <span>i-Sumbong</span>
+                    <small>Resident</small>
+                </span>
+            </div>
+            <button class="sidenav-collapse-btn" onclick="collapseSidenav()" title="Collapse">
+                <i class="fas fa-chevron-right" id="collapseIcon"></i>
+            </button>
+            <button class="sidenav-close" id="sidenavClose">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <nav class="sidenav-links">
+            <a href="{% url 'home' %}?page=home" class="sidenav-link {% if initial_page == 'home' %}active{% endif %}" data-page="home">
+                <i class="fas fa-house"></i>
+                <span>Home</span>
+            </a>
+            <a href="{% url 'home' %}?page=submit" class="sidenav-link {% if initial_page == 'submit' %}active{% endif %}" data-page="submit">
+                <i class="fas fa-plus-circle"></i>
+                <span>Report Issue</span>
+            </a>
+            <a href="{% url 'home' %}?page=my-reports" class="sidenav-link {% if initial_page == 'my-reports' %}active{% endif %}" data-page="my-reports">
+                <i class="fas fa-file-alt"></i>
+                <span>My Reports</span>
+            </a>
+            <a href="{% url 'home' %}?page=community" class="sidenav-link {% if initial_page == 'community' %}active{% endif %}" data-page="community">
+                <i class="fas fa-users"></i>
+                <span>Community Feed</span>
+            </a>
+            <a href="{% url 'home' %}?page=notifications" class="sidenav-link {% if initial_page == 'notifications' %}active{% endif %}" data-page="notifications">
+                <div class="sidenav-notif-icon">
+                    <i class="fas fa-bell"></i>
+                    {% if unread_count > 0 %}
+                        <span class="sidenav-notif-badge">{{ unread_count }}</span>
+                    {% endif %}
+                </div>
+                <span>Notifications</span>
+            </a>
+            <a href="{% url 'home' %}?page=profile" class="sidenav-link {% if initial_page == 'profile' %}active{% endif %}" data-page="profile">
+                <div class="sidenav-profile-avatar">
+                    {% if profile and profile.avatar %}
+                        <img src="{{ profile.avatar.url }}" alt="{{ user.username }} avatar">
+                    {% else %}
+                        {{ user.username|first|upper }}
+                    {% endif %}
+                </div>
+                <span>{{ user.username }}</span>
+            </a>
+        </nav>
+
+        <div class="sidenav-account-card">
+            <div class="sidenav-account-top">
+                <div class="sidenav-account-avatar">
+                    {% if profile and profile.avatar %}
+                        <img src="{{ profile.avatar.url }}" alt="{{ user.username }} avatar">
+                    {% else %}
+                        {{ user.username|first|upper }}
+                    {% endif %}
+                </div>
+                <div>
+                    <p>{{ user.username }}</p>
+                    <span>{{ profile.barangay.name|default:"Community resident" }}</span>
+                </div>
+            </div>
+            <span class="resident-status-pill">
+                <i class="fas fa-shield-halved"></i>
+                {{ profile.get_status_display|default:"Active" }}
+            </span>
+            <div class="sidenav-account-stats">
+                <span><strong>{{ my_reports_count }}</strong> Assets</span>
+                <span><strong>{{ pending_count|add:inprogress_count }}</strong> Open</span>
+            </div>
+        </div>
+
+        <div class="sidenav-footer">
+            <form method="post" action="{% url 'logout' %}" style="margin: 0;">
+                {% csrf_token %}
+                <button type="submit" class="sidenav-logout" style="border: 0; background: transparent; width: 100%; text-align: left;">
+                    <i class="fas fa-right-from-bracket"></i>
+                    <span>Logout</span>
+                </button>
+            </form>
+            <a href="{% url 'home' %}?page=settings" class="sidenav-link sidenav-settings {% if initial_page == 'settings' %}active{% endif %}" data-page="settings">
+                <i class="fas fa-gear"></i>
+                <span>Settings</span>
+            </a>
+        </div>
+    </aside>
+
+    <div class="sidenav-overlay" id="sidenavOverlay" onclick="toggleSidenav()"></div>
+
+    <div class="dashboard-main">
+        <div class="topbar">
+            <button class="topbar-toggle" onclick="toggleSidenav()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="topbar-heading">
+                <span id="pageKicker">Resident Command Center</span>
+                <h2 class="topbar-title" id="pageTitle">Home</h2>
+            </div>
+            <div class="topbar-actions">
+                <span class="topbar-scope"><i class="fas fa-location-dot"></i> {{ profile.barangay.name|default:"Barangay" }}</span>
+                <button class="btn-icon" id="quickReportBtn" title="Quick Report" aria-label="Quick Report" onclick="openQuickReport()"><i class="fas fa-plus-circle"></i></button>
+                <button class="btn-icon topbar-notif-btn" id="notifBtn" title="Notifications" aria-label="Notifications" onclick="openNotifications()">
+                    <i class="fas fa-bell"></i>
+                    {% if unread_count > 0 %}
+                        <span class="topbar-notif-badge">{{ unread_count }}</span>
+                    {% endif %}
+                </button>
+                <button class="btn-icon topbar-profile-btn" id="profileQuickBtn" title="Profile" aria-label="Profile" onclick="openProfile()">
+                    <span class="topbar-profile-avatar">
+                        {% if profile and profile.avatar %}
+                            <img src="{{ profile.avatar.url }}" alt="{{ user.username }} avatar">
+                        {% else %}
+                            {{ user.username|first|upper }}
+                        {% endif %}
+                    </span>
+                </button>
+            </div>
+        </div>
+
+        <div class="page-content home-page-content {% if initial_page == 'home' %}active{% endif %}" id="page-home">
+            {% if messages %}
+                <div class="feed-wrapper" style="margin-bottom: 0;">
+                    {% for message in messages %}
+                        <div class="alert-success">
+                            <i class="fas fa-check-circle"></i> {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="resident-hero resident-hero-command">
+                <div class="resident-hero-copy">
+                    <span class="resident-hero-eyebrow"><i class="fas fa-chart-line"></i> Community Portfolio</span>
+                    <h1>{{ user.username }}'s Resident Command Center</h1>
+                    <p class="resident-hero-subtitle">Barangay operations, report assets, and civic wins in one polished account view.</p>
+                    <div class="resident-hero-meta">
+                        <span><i class="fas fa-location-dot"></i> {{ profile.barangay.name|default:"Barangay not set" }}</span>
+                        <span><i class="fas fa-shield-halved"></i> {{ profile.get_status_display|default:"Active" }}</span>
+                        <span><i class="fas fa-calendar"></i> Since {{ user.date_joined|date:"M Y" }}</span>
+                    </div>
+                    <div class="resident-hero-actions">
+                        <button type="button" class="btn-modern btn-login" onclick="showPage('submit')">
+                            <i class="fas fa-plus-circle"></i> New Report
+                        </button>
+                        <button type="button" class="btn-cancel" onclick="showPage('my-reports')">
+                            <i class="fas fa-folder-open"></i> Portfolio
+                        </button>
+                    </div>
+                </div>
+                <div class="resident-hero-panel" aria-label="Resident account summary">
+                    <div class="hero-ledger-top">
+                        <span>Account Ledger</span>
+                        <strong>{{ profile.get_status_display|default:"Active" }}</strong>
+                    </div>
+                    <div class="hero-ledger-grid">
+                        <div>
+                            <span>{{ my_reports_count }}</span>
+                            <p>Report Assets</p>
+                        </div>
+                        <div>
+                            <span>{{ pending_count|add:inprogress_count }}</span>
+                            <p>Active Cases</p>
+                        </div>
+                        <div>
+                            <span>{{ resolved_count }}</span>
+                            <p>Resolved Wins</p>
+                        </div>
+                    </div>
+                    <div class="hero-ledger-footer">
+                        <i class="fas fa-location-crosshairs"></i>
+                        <span>{{ profile.barangay.name|default:"Barangay territory" }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feed-wrapper home-overview-wrap">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon stat-icon-blue">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div>
+                            <span class="stat-number">{{ my_reports_count }}</span>
+                            <span class="stat-label">My Reports</span>
+                            <span class="stat-chip">Portfolio</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon stat-icon-gold">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div>
+                            <span class="stat-number">{{ pending_count }}</span>
+                            <span class="stat-label">Pending</span>
+                            <span class="stat-chip">Queue</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon stat-icon-cyan">
+                            <i class="fas fa-spinner"></i>
+                        </div>
+                        <div>
+                            <span class="stat-number">{{ inprogress_count }}</span>
+                            <span class="stat-label">In Progress</span>
+                            <span class="stat-chip">Operations</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon stat-icon-emerald">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div>
+                            <span class="stat-number">{{ community_reports_count }}</span>
+                            <span class="stat-label">Community Feed</span>
+                            <span class="stat-chip">Market</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if urgent_bulletins %}
+                <div class="bulletin-alert">
+                    <div>
+                        <span class="bulletin-alert-title"><i class="fas fa-triangle-exclamation"></i> Urgent Barangay Update</span>
+                        <p class="bulletin-alert-text">{{ urgent_bulletins.0.title }}</p>
+                    </div>
+                    <span class="bulletin-alert-badge">Urgent</span>
+                </div>
+            {% endif %}
+
+            <div class="bulletin-section home-bulletin-section">
+                <div class="bulletin-section-header">
+                    <div>
+                        <h3>Barangay Bulletin</h3>
+                        <p>Official announcements and updates from your barangay.</p>
+                    </div>
+                </div>
+
+                {% if bulletins %}
+                    <div class="bulletin-grid">
+                        {% for post in bulletins %}
+                            <div class="bulletin-card">
+                                <div class="bulletin-card-header">
+                                    <div class="bulletin-card-badges">
+                                        <span class="bulletin-badge bulletin-badge-category">{{ post.get_category_display }}</span>
+                                        {% if post.is_pinned %}
+                                            <span class="bulletin-badge bulletin-badge-pin"><i class="fas fa-thumbtack"></i> Pinned</span>
+                                        {% endif %}
+                                        {% if post.priority == 'urgent' %}
+                                            <span class="bulletin-badge bulletin-badge-urgent"><i class="fas fa-triangle-exclamation"></i> Urgent</span>
+                                        {% elif post.priority == 'important' %}
+                                            <span class="bulletin-badge bulletin-badge-important"><i class="fas fa-circle-exclamation"></i> Important</span>
+                                        {% endif %}
+                                    </div>
+                                    <span class="bulletin-card-date">{{ post.created_at|date:"M d, Y" }}</span>
+                                </div>
+                                <h4 class="bulletin-card-title">{{ post.title }}</h4>
+                                <p class="bulletin-card-content">{{ post.content }}</p>
+                                {% if post.display_image_urls %}
+                                    <div class="media-gallery">
+                                        {% for image_url in post.display_image_urls %}
+                                            <img src="{{ image_url }}" alt="{{ post.title }}" class="media-item" data-full-url="{{ image_url }}">
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="bulletin-card-meta">
+                                    <span><i class="fas fa-user-shield"></i> {{ post.created_by.username|default:"Barangay Admin" }}</span>
+                                    {% if post.expires_at %}
+                                        <span><i class="fas fa-hourglass-end"></i> Expires {{ post.expires_at|date:"M d, Y" }}</span>
+                                    {% endif %}
+                                </div>
+                                {% if post.post_type == 'memorandum' %}
+                                    <div style="margin-top:8px;">
+                                        <button class="admin-filter-btn open-bulletin-modal">View Memorandum</button>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state bulletin-empty">
+                        <i class="fas fa-bullhorn"></i>
+                        <p>No bulletin posts yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="feed-wrapper home-highlights-wrap">
+                <div class="home-grid home-grid-featured">
+                    <div class="home-card">
+                        <div class="card-header">
+                            <h3>Quick Actions</h3>
+                            <p>Fast access to the most common resident tasks.</p>
+                        </div>
+                        <div class="report-list quick-action-list">
+                            <button type="button" class="report-item quick-action-link" onclick="showPage('submit')">
+                                <span class="quick-action-mark"><i class="fas fa-plus"></i></span>
+                                <div class="report-item-top">
+                                    <span class="report-title">Create a new report</span>
+                                    <i class="fas fa-arrow-right"></i>
+                                </div>
+                                <div class="report-meta">
+                                    <span>Submit an incident with photos and location.</span>
+                                </div>
+                            </button>
+                            <button type="button" class="report-item quick-action-link" onclick="showPage('my-reports')">
+                                <span class="quick-action-mark"><i class="fas fa-briefcase"></i></span>
+                                <div class="report-item-top">
+                                    <span class="report-title">Review my reports</span>
+                                    <i class="fas fa-arrow-right"></i>
+                                </div>
+                                <div class="report-meta">
+                                    <span>Track statuses, update details, or remove old reports.</span>
+                                </div>
+                            </button>
+                            <button type="button" class="report-item quick-action-link" onclick="showPage('community')">
+                                <span class="quick-action-mark"><i class="fas fa-chart-simple"></i></span>
+                                <div class="report-item-top">
+                                    <span class="report-title">Browse community feed</span>
+                                    <i class="fas fa-arrow-right"></i>
+                                </div>
+                                <div class="report-meta">
+                                    <span>See public incident reports from your barangay neighbors.</span>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="home-card">
+                        <div class="card-header">
+                            <h3>Recent Activity</h3>
+                            <p>Your latest report updates and status changes.</p>
+                        </div>
+                        <div class="report-list">
+                            {% for report in my_reports|slice:":3" %}
+                                <div class="report-item">
+                                    <div class="report-item-top">
+                                        <span class="report-title">{{ report.title }}</span>
+                                        <span class="status-badge status-{{ report.status }}">{{ report.get_status_display }}</span>
+                                    </div>
+                                    <div class="report-meta">
+                                        <span><i class="fas fa-map-marker-alt"></i> {{ report.location }}</span>
+                                        <span><i class="fas fa-clock"></i> {{ report.created_at|timesince }} ago</span>
+                                    </div>
+                                </div>
+                            {% empty %}
+                                <div class="empty-state" style="padding: 18px 12px;">
+                                    <i class="fas fa-file-circle-plus"></i>
+                                    <p>You have not submitted any reports yet.</p>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="page-content {% if initial_page == 'submit' %}active{% endif %}" id="page-submit">
+            <div class="form-page-card">
+                <div class="form-page-header">
+                    <i class="fas fa-plus-circle" style="color: #2563eb; font-size: 28px;"></i>
+                    <h3>Report an Issue</h3>
+                    <p>Share a problem in your area so the barangay can respond.</p>
+                </div>
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="submit_report">
+                    <input type="hidden" name="next_page" value="home">
+                    <input type="hidden" name="latitude" id="latitudeInput">
+                    <input type="hidden" name="longitude" id="longitudeInput">
+
+                    <div class="form-group">
+                        <label class="field-label">Report Title</label>
+                        <div class="input-field-wrapper">
+                            <i class="fas fa-heading input-icon"></i>
+                            <input type="text" name="title" class="form-input" placeholder="Example: Overflowing trash near covered court" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="field-label">Location</label>
+                        <div class="input-field-wrapper">
+                            <i class="fas fa-map-marker-alt input-icon"></i>
+                            <input type="text" name="location" class="form-input" placeholder="Enter the exact location..." required>
+                            <button type="button" class="btn-small" style="margin-left:8px;" onclick="captureLocation(this)">Use my location</button>
+                        </div>
+                        <div id="reportLocationMap" class="report-location-map" aria-label="Choose report location on map"></div>
+                        <p id="reportLocationMapStatus" class="location-map-status" aria-live="polite">{% if google_maps_api_key %}Loading Google Maps...{% else %}Google Maps API key is not configured. Enter the address manually until a key is added.{% endif %}</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="field-label">Priority Level</label>
+                        <div class="input-field-wrapper">
+                            <i class="fas fa-flag input-icon"></i>
+                            <select name="priority" class="form-input" required>
+                                <option value="" disabled selected>Select priority...</option>
+                                <option value="low">Low - Not very urgent</option>
+                                <option value="medium">Medium - Needs attention</option>
+                                <option value="high">High - Urgent</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="field-label">Details</label>
+                        <div class="input-field-wrapper" style="align-items: flex-start;">
+                            <i class="fas fa-align-left input-icon" style="margin-top: 12px;"></i>
+                            <textarea name="description" class="form-input" rows="5" placeholder="Describe the problem in detail..." required style="resize: vertical;"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="field-label">Photos (Optional)</label>
+                        <div class="file-upload-wrapper" onclick="document.getElementById('photoInput').click()">
+                            <i class="fas fa-camera" style="font-size: 24px; color: #2563eb; margin-bottom: 6px;"></i>
+                            <p style="font-size: 13px; color: #64748b; margin: 0;">Click to upload one or more photos</p>
+                            <p style="font-size: 11px; color: #94a3b8; margin: 4px 0 0 0;" id="fileName">PNG, JPG up to 5MB each</p>
+                            <input type="file" id="photoInput" name="photos" accept="image/*" style="display: none;" onchange="handleReportFiles(this)" multiple>
+                            <div id="photoInputPreview" style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;"></div>
+                            <script>
+                            function validateFilesList_simple(files, opts){
+                                const maxFiles = opts.maxFiles || 8;
+                                const allowed = opts.allowedTypes || ['image/jpeg', 'image/png', 'image/webp'];
+                                if(files.length > maxFiles) return {ok:false, message: `Please select up to ${maxFiles} images.`};
+                                for(let i = 0; i < files.length; i++){
+                                    const f = files[i];
+                                    if(allowed.indexOf(f.type) === -1) return {ok:false, message:'Unsupported file type.'};
+                                }
+                                return {ok:true};
+                            }
+                            function renderPreviewList_local(files, container){
+                                container.innerHTML = '';
+                                const frag = document.createDocumentFragment();
+                                Array.from(files).forEach((file, idx) => {
+                                    const url = URL.createObjectURL(file);
+                                    const wrap = document.createElement('div');
+                                    wrap.className = 'preview-thumb';
+                                    const img = document.createElement('img');
+                                    img.src = url;
+                                    img.alt = file.name;
+                                    const btn = document.createElement('button');
+                                    btn.className = 'remove-thumb';
+                                    btn.type = 'button';
+                                    btn.textContent = 'x';
+                                    btn.addEventListener('click', function(){
+                                        removeFileFromInput(container.dataset.inputId, idx);
+                                    });
+                                    wrap.appendChild(img);
+                                    wrap.appendChild(btn);
+                                    frag.appendChild(wrap);
+                                });
+                                container.appendChild(frag);
+                            }
+                            function removeFileFromInput(inputId, removeIndex){
+                                const input = document.getElementById(inputId);
+                                if(!input) return;
+                                const dt = new DataTransfer();
+                                const files = Array.from(input.files);
+                                files.forEach((f, i) => {
+                                    if(i !== removeIndex) dt.items.add(f);
+                                });
+                                input.files = dt.files;
+                                const preview = document.getElementById(inputId + 'Preview');
+                                if(preview) renderPreviewList_local(input.files, preview);
+                            }
+                            function compressImage_local(file, maxWidth = 1600, quality = 0.82){
+                                return new Promise((resolve, reject) => {
+                                    const img = new Image();
+                                    img.onload = function(){
+                                        const ratio = img.width / img.height;
+                                        const w = Math.min(maxWidth, img.width);
+                                        const h = Math.round(w / ratio);
+                                        const canvas = document.createElement('canvas');
+                                        canvas.width = w;
+                                        canvas.height = h;
+                                        const ctx = canvas.getContext('2d');
+                                        ctx.drawImage(img, 0, 0, w, h);
+                                        canvas.toBlob(function(blob){
+                                            if(!blob) return reject(new Error('Compress failed'));
+                                            const f = new File([blob], file.name.replace(/\.[^.]+$/, '') + '.jpg', {type:'image/jpeg'});
+                                            resolve(f);
+                                        }, 'image/jpeg', quality);
+                                    };
+                                    img.onerror = function(){ reject(new Error('Image load error')); };
+                                    img.src = URL.createObjectURL(file);
+                                });
+                            }
+                            async function compressFilesList_local(files, opts){
+                                const arr = [];
+                                for(let i = 0; i < files.length; i++){
+                                    try {
+                                        const c = await compressImage_local(files[i], opts.maxWidth || 1600, opts.quality || 0.82);
+                                        arr.push(c);
+                                    } catch (e) {
+                                        arr.push(files[i]);
+                                    }
+                                }
+                                return arr;
+                            }
+                            window.handleReportFiles = async function(el){
+                                const raw = Array.from(el.files || []);
+                                const preview = document.getElementById('photoInputPreview');
+                                const fileName = document.getElementById('fileName');
+                                const res = validateFilesList_simple(raw, {maxFiles:8});
+                                if(!res.ok){
+                                    alert(res.message);
+                                    el.value = '';
+                                    preview.innerHTML = '';
+                                    if(fileName) fileName.textContent = 'PNG, JPG up to 5MB each';
+                                    return;
+                                }
+                                const compressed = await compressFilesList_local(raw, {maxWidth:1600, quality:0.82});
+                                const dt = new DataTransfer();
+                                compressed.forEach(f => dt.items.add(f));
+                                el.files = dt.files;
+                                preview.className = 'upload-preview';
+                                preview.dataset.inputId = 'photoInput';
+                                renderPreviewList_local(el.files, preview);
+                                if(fileName){
+                                    fileName.textContent = el.files.length === 1 ? el.files[0].name : el.files.length + ' photos selected';
+                                }
+                            }
+                            </script>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-modern btn-login" style="margin-top: 8px;">
+                        <i class="fas fa-paper-plane" style="margin-right: 6px;"></i> Submit Report
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="page-content {% if initial_page == 'my-reports' %}active{% endif %}" id="page-my-reports">
+            <div class="feed-wrapper">
+                <div class="form-page-card report-page-card">
+                    <div class="form-page-header">
+                        <i class="fas fa-folder-open" style="color: #2563eb; font-size: 28px;"></i>
+                        <span class="resident-hero-eyebrow"><i class="fas fa-briefcase"></i> Asset Portfolio</span>
+                        <h3>My Reports</h3>
+                        <p>Your personal civic portfolio and response progress.</p>
+                    </div>
+                    <div class="stats-grid report-page-stats">
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon-blue"><i class="fas fa-file-alt"></i></div>
+                            <div>
+                                <span class="stat-number">{{ my_reports_count }}</span>
+                                <span class="stat-label">Submitted</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon-gold"><i class="fas fa-clock"></i></div>
+                            <div>
+                                <span class="stat-number">{{ pending_count }}</span>
+                                <span class="stat-label">Pending</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon-cyan"><i class="fas fa-spinner"></i></div>
+                            <div>
+                                <span class="stat-number">{{ inprogress_count }}</span>
+                                <span class="stat-label">In Progress</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon-emerald"><i class="fas fa-check-circle"></i></div>
+                            <div>
+                                <span class="stat-number">{{ resolved_count }}</span>
+                                <span class="stat-label">Resolved</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="myReportsList">
+                    {% include 'base/partials/my_reports_list.html' %}
+                </div>
+            </div>
+        </div>
+
+        <div class="page-content {% if initial_page == 'community' %}active{% endif %}" id="page-community">
+            <div class="feed-wrapper">
+                <div class="form-page-card community-page-card">
+                    <div class="form-page-header">
+                        <i class="fas fa-users" style="color: #2563eb; font-size: 28px;"></i>
+                        <span class="resident-hero-eyebrow"><i class="fas fa-city"></i> Barangay Market</span>
+                        <h3>Community Feed</h3>
+                        <p>Shared report activity across your barangay.</p>
+                    </div>
+                    <div class="community-page-meta">
+                        <span class="feed-stat"><i class="fas fa-location-dot"></i> {{ profile.barangay.name|default:"Your barangay" }}</span>
+                        <span class="feed-stat"><i class="fas fa-list"></i> {{ community_reports_count }} report{{ community_reports_count|pluralize }}</span>
+                    </div>
+                </div>
+
+                {% if community_reports %}
+                    {% for report in community_reports %}
+                        <div class="feed-card">
+                            <div class="feed-card-header">
+                                <div class="feed-avatar">{{ report.user.username|first|upper }}</div>
+                                <div class="feed-meta">
+                                    <p class="feed-username">{{ report.user.username }}</p>
+                                    <p class="feed-time">
+                                        <i class="fas fa-map-marker-alt"></i> {{ report.location }}
+                                        &nbsp;&middot;&nbsp;
+                                        <i class="fas fa-clock"></i> {{ report.created_at|timesince }} ago
+                                    </p>
+                                </div>
+                                <div class="feed-badges">
+                                    {% if report.priority == 'high' %}
+                                        <span class="priority-badge priority-high"><i class="fas fa-exclamation-circle"></i> Urgent</span>
+                                    {% elif report.priority == 'medium' %}
+                                        <span class="priority-badge priority-medium"><i class="fas fa-minus-circle"></i> Medium</span>
+                                    {% else %}
+                                        <span class="priority-badge priority-low"><i class="fas fa-arrow-circle-down"></i> Low</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="feed-card-body">
+                                <h4 class="feed-title"><a href="{% url 'report_detail' report.id %}">{{ report.title }}</a></h4>
+                                <p class="feed-description">{{ report.description }}</p>
+                                {% if report.display_image_urls %}
+                                    <div class="media-gallery">
+                                        {% for image_url in report.display_image_urls %}
+                                            <img src="{{ image_url }}" alt="{{ report.title }}" class="media-item" data-full-url="{{ image_url }}">
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="feed-card-footer">
+                                <span class="status-badge status-{{ report.status }}">
+                                    {% if report.status == 'pending' %}
+                                        <i class="fas fa-clock"></i>
+                                    {% elif report.status == 'in_progress' %}
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                    {% else %}
+                                        <i class="fas fa-check-circle"></i>
+                                    {% endif %}
+                                    {{ report.get_status_display }}
+                                </span>
+                                <a href="{% url 'report_detail' report.id %}" class="btn-small report-card-link">View Details</a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state report-empty-state">
+                        <i class="fas fa-users-slash"></i>
+                        <p>No other community reports yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="page-content {% if initial_page == 'notifications' %}active{% endif %}" id="page-notifications">
+            <div class="form-page-card notification-page-card">
+                <div class="notif-panel-header notification-command-header">
+                    <div>
+                        <span class="resident-hero-eyebrow"><i class="fas fa-bell"></i> Signal Desk</span>
+                        <h3>Notifications</h3>
+                    </div>
+                    {% if unread_count > 0 %}
+                        <button class="notif-mark-read" onclick="markAllRead()">Mark all as read</button>
+                    {% endif %}
+                </div>
+                <div class="notif-list" style="max-height: none;">
+                    {% if notifications %}
+                        {% for notif in notifications %}
+                            <a href="{% url 'notification_detail' notif.id %}" class="notif-item {% if not notif.is_read %}unread{% endif %}" title="View notification details">
+                                <div class="notif-icon {% if notif.notif_type == 'resolved' %}notif-icon-resolved{% elif notif.notif_type == 'status_changed' %}notif-icon-status{% else %}notif-icon-submitted{% endif %}">
+                                    {% if notif.notif_type == 'resolved' %}
+                                        <i class="fas fa-check-circle"></i>
+                                    {% elif notif.notif_type == 'status_changed' %}
+                                        <i class="fas fa-rotate"></i>
+                                    {% else %}
+                                        <i class="fas fa-paper-plane"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="notif-content">
+                                    <p class="notif-message">{{ notif.message }}</p>
+                                    <p class="notif-time">{{ notif.created_at|timesince }} ago</p>
+                                </div>
+                                {% if not notif.is_read %}
+                                    <span class="notif-dot"></span>
+                                {% endif %}
+                            </a>
+                        {% endfor %}
+                    {% else %}
+                        <div class="notif-empty">
+                            <i class="fas fa-bell-slash"></i>
+                            <p>No notifications yet</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="page-content {% if initial_page == 'profile' %}active{% endif %}" id="page-profile">
+            <div class="form-page-card resident-profile-card">
+                <div class="resident-profile-hero">
+                    <div class="profile-avatar-large">
+                        {% if profile and profile.avatar %}
+                            <img src="{{ profile.avatar.url }}" alt="{{ user.username }} avatar">
+                        {% else %}
+                            {{ user.username|first|upper }}
+                        {% endif %}
+                    </div>
+                    <div class="resident-profile-copy">
+                        <span class="resident-hero-eyebrow"><i class="fas fa-user-shield"></i> Resident Profile</span>
+                        <h3>{{ user.username }}</h3>
+                        <p>{{ profile.barangay.name|default:"Barangay not set" }} community account</p>
+                        <span class="resident-status-pill"><i class="fas fa-shield-halved"></i> {{ profile.get_status_display|default:"Active" }}</span>
+                    </div>
+                    <div class="resident-profile-actions">
+                        <a href="{% url 'edit_profile' %}" class="btn-modern btn-login"><i class="fas fa-pen"></i> Edit Profile</a>
+                        <button type="button" class="btn-cancel" onclick="showPage('my-reports')"><i class="fas fa-folder-open"></i> View Reports</button>
+                    </div>
+                </div>
+
+                <div class="profile-metric-grid">
+                    <div class="profile-metric">
+                        <i class="fas fa-briefcase"></i>
+                        <span>{{ my_reports_count }}</span>
+                        <p>Total Reports</p>
+                    </div>
+                    <div class="profile-metric">
+                        <i class="fas fa-clock"></i>
+                        <span>{{ pending_count }}</span>
+                        <p>Pending</p>
+                    </div>
+                    <div class="profile-metric">
+                        <i class="fas fa-trophy"></i>
+                        <span>{{ resolved_count }}</span>
+                        <p>Resolved</p>
+                    </div>
+                </div>
+
+                <div class="profile-insight-grid">
+                    <div class="profile-insight">
+                        <span><i class="fas fa-id-badge"></i> Account Status</span>
+                        <strong>{{ profile.get_status_display|default:"Active" }}</strong>
+                    </div>
+                    <div class="profile-insight">
+                        <span><i class="fas fa-map"></i> Territory</span>
+                        <strong>{{ profile.barangay.name|default:"Not set" }}</strong>
+                    </div>
+                    <div class="profile-insight">
+                        <span><i class="fas fa-file-shield"></i> Residency Proof</span>
+                        <strong>{% if profile.proof_of_residency %}Uploaded{% else %}Not uploaded{% endif %}</strong>
+                    </div>
+                </div>
+
+                <div class="profile-section-title">
+                    <span class="resident-hero-eyebrow"><i class="fas fa-list-check"></i> Account Ledger</span>
+                </div>
+                <div class="profile-details">
+                    <div class="profile-row">
+                        <span class="profile-label"><i class="fas fa-user"></i> Username</span>
+                        <span class="profile-value">{{ user.username }}</span>
+                    </div>
+                    <div class="profile-row">
+                        <span class="profile-label"><i class="fas fa-envelope"></i> Email</span>
+                        <span class="profile-value">{{ user.email|default:"Not set" }}</span>
+                    </div>
+                    <div class="profile-row">
+                        <span class="profile-label"><i class="fas fa-location-dot"></i> Barangay</span>
+                        <span class="profile-value">{{ profile.barangay.name|default:"Not set" }}</span>
+                    </div>
+                    <div class="profile-row">
+                        <span class="profile-label"><i class="fas fa-house-user"></i> Address</span>
+                        <span class="profile-value">{{ profile.address|default:"Not set" }}</span>
+                    </div>
+                    <div class="profile-row">
+                        <span class="profile-label"><i class="fas fa-phone"></i> Phone</span>
+                        <span class="profile-value">{{ profile.phone_number|default:"Not set" }}</span>
+                    </div>
+                    <div class="profile-row">
+                        <span class="profile-label"><i class="fas fa-calendar"></i> Joined</span>
+                        <span class="profile-value">{{ user.date_joined|date:"M d, Y" }}</span>
+                    </div>
+                    <div class="profile-row">
+                        <span class="profile-label"><i class="fas fa-file-alt"></i> Total Reports</span>
+                        <span class="profile-value">{{ my_reports_count }}</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="page-content {% if initial_page == 'settings' %}active{% endif %}" id="page-settings">
+            <div class="form-page-card">
+                <div class="form-page-header">
+                    <i class="fas fa-gear" style="color: #2563eb; font-size: 28px;"></i>
+                    <span class="resident-hero-eyebrow"><i class="fas fa-vault"></i> Control Vault</span>
+                    <h3>Settings</h3>
+                    <p>Manage your resident account.</p>
+                </div>
+                <div class="settings-list account-settings-list">
+                    <div class="settings-item">
+                        <span class="settings-icon"><i class="fas fa-id-card"></i></span>
+                        <div>
+                            <p class="settings-title">Edit Profile</p>
+                            <p class="settings-sub">Update your address, phone number, and proof files.</p>
+                        </div>
+                        <a href="{% url 'edit_profile' %}" class="btn-modern btn-login" style="width: auto; padding: 8px 16px; font-size: 13px;">
+                            Open
+                        </a>
+                    </div>
+                    <div class="settings-item">
+                        <span class="settings-icon"><i class="fas fa-key"></i></span>
+                        <div>
+                            <p class="settings-title">Change Password</p>
+                            <p class="settings-sub">Update your password for security.</p>
+                        </div>
+                        <a href="{% url 'password_reset' %}" class="btn-modern btn-login" style="width: auto; padding: 8px 16px; font-size: 13px;">
+                            Change
+                        </a>
+                    </div>
+                    <div class="settings-item">
+                        <span class="settings-icon settings-icon-danger"><i class="fas fa-right-from-bracket"></i></span>
+                        <div>
+                            <p class="settings-title">Logout</p>
+                            <p class="settings-sub">Sign out of your account.</p>
+                        </div>
+                        <form method="post" action="{% url 'logout' %}" style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-modern" style="width: auto; padding: 8px 16px; font-size: 13px; background: #dc2626;">
+                                Logout
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="quickReportModal">
+            <div class="modal-box">
+                <div class="modal-header">
+                    <h3><i class="fas fa-plus-circle" style="margin-right:8px;color:#2563eb"></i>Quick Report</h3>
+                    <button class="modal-close" onclick="closeQuickReport()"><i class="fas fa-times"></i></button>
+                </div>
+                <form method="post" enctype="multipart/form-data" id="quickReportForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="submit_report">
+                    <input type="hidden" name="next_page" value="home">
+                    <input type="hidden" name="latitude">
+                    <input type="hidden" name="longitude">
+                    <div class="form-group">
+                        <label class="field-label">Report Title</label>
+                        <div class="input-field-wrapper">
+                            <i class="fas fa-heading input-icon"></i>
+                            <input type="text" name="title" class="form-input" placeholder="Short title" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="field-label">Location</label>
+                        <div class="input-field-wrapper">
+                            <i class="fas fa-map-marker-alt input-icon"></i>
+                            <input type="text" name="location" class="form-input" placeholder="Location" required>
+                            <button type="button" class="btn-small" style="margin-left:8px;" onclick="captureLocation(this)">Use my location</button>
+                        </div>
+                        <div id="quickReportLocationMap" class="report-location-map" aria-label="Choose report location on map"></div>
+                        <p id="quickReportLocationMapStatus" class="location-map-status" aria-live="polite">{% if google_maps_api_key %}Loading Google Maps...{% else %}Google Maps API key is not configured. Enter the address manually until a key is added.{% endif %}</p>
+                    </div>
+                    <div class="form-group">
+                        <label class="field-label">Details</label>
+                        <div class="input-field-wrapper" style="align-items: flex-start;">
+                            <i class="fas fa-align-left input-icon" style="margin-top: 12px;"></i>
+                            <textarea name="description" class="form-input" rows="4" placeholder="Describe the problem..." required style="resize: vertical;"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-cancel" onclick="closeQuickReport()">Cancel</button>
+                        <button type="submit" class="btn-modern btn-login"><i class="fas fa-paper-plane" style="margin-right:6px"></i> Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="notificationsModal">
+            <div class="modal-box modal-box-sm">
+                <div class="modal-header">
+                    <h3><i class="fas fa-bell" style="margin-right:8px;color:#f59e0b"></i>Notifications</h3>
+                    <button class="modal-close" onclick="closeNotifications()"><i class="fas fa-times"></i></button>
+                </div>
+                <div style="padding: 12px 18px; max-height: 60vh; overflow:auto;">
+                    {% if notifications %}
+                        <ul style="padding-left: 16px;">
+                            {% for n in notifications %}
+                                <li style="margin-bottom:10px;">
+                                    <a href="{% url 'notification_detail' n.id %}" class="notif-modal-link">{{ n.message|default:n }}</a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>No notifications.</p>
+                    {% endif %}
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-modern" onclick="closeNotifications()">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="editModal">
+            <div class="modal-box">
+                <div class="modal-header">
+                    <h3><i class="fas fa-pen" style="margin-right: 8px; color: #2563eb;"></i>Edit Report</h3>
+                    <button class="modal-close" onclick="closeEditModal()"><i class="fas fa-times"></i></button>
+                </div>
+                <form method="post" id="editForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="edit_report">
+                    <input type="hidden" name="report_id" id="editReportId">
+                    <div class="form-group">
+                        <label class="field-label">Title</label>
+                        <input type="text" name="title" id="editTitle" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="field-label">Location</label>
+                        <input type="text" name="location" id="editLocation" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="field-label">Priority</label>
+                        <select name="priority" id="editPriority" class="form-input">
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">Urgent</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="field-label">Details</label>
+                        <textarea name="description" id="editDescription" class="form-input" rows="4" style="resize: vertical;"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-cancel" onclick="closeEditModal()">Cancel</button>
+                        <button type="submit" class="btn-modern btn-login" style="padding: 10px 24px;">
+                            <i class="fas fa-save" style="margin-right: 6px;"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="deleteModal">
+            <div class="modal-box modal-box-sm">
+                <div class="modal-header">
+                    <h3><i class="fas fa-trash" style="margin-right: 8px; color: #dc2626;"></i>Delete Report</h3>
+                    <button class="modal-close" onclick="closeDeleteModal()"><i class="fas fa-times"></i></button>
+                </div>
+                <p class="modal-desc">Are you sure you want to delete <strong id="deleteReportTitle"></strong>? This cannot be undone.</p>
+                <form method="post" id="deleteForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="delete_report">
+                    <input type="hidden" name="report_id" id="deleteReportId">
+                    <div class="modal-footer">
+                        <button type="button" class="btn-cancel" onclick="closeDeleteModal()">Cancel</button>
+                        <button type="submit" class="btn-danger">
+                            <i class="fas fa-trash" style="margin-right: 6px;"></i> Delete
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="profileModal">
+            <div class="modal-box modal-box-sm">
+                <div class="modal-header">
+                    <h3><i class="fas fa-user" style="margin-right:8px;color:#2563eb"></i>Profile</h3>
+                    <button class="modal-close" onclick="closeProfile()"><i class="fas fa-times"></i></button>
+                </div>
+                <div style="padding:12px 18px;">
+                    <p><strong>Username:</strong> {{ user.username }}</p>
+                    <p><strong>Email:</strong> {{ user.email }}</p>
+                    {% if profile and profile.barangay %}
+                        <p><strong>Barangay:</strong> {{ profile.barangay.name }}</p>
+                    {% endif %}
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-modern" onclick="showPage('profile'); closeProfile();">Open Profile</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        const csrftoken = getCookie('csrftoken');
+
+        function openQuickReport(){ document.getElementById('quickReportModal').classList.add('open'); document.body.style.overflow = 'hidden'; setTimeout(function(){ window.resizeGoogleReportMap?.('quickReportLocationMap'); }, 100); }
+        function closeQuickReport(){ document.getElementById('quickReportModal').classList.remove('open'); document.body.style.overflow = ''; }
+        function openNotifications(){ document.getElementById('notificationsModal').classList.add('open'); document.body.style.overflow = 'hidden'; }
+        function closeNotifications(){ document.getElementById('notificationsModal').classList.remove('open'); document.body.style.overflow = ''; }
+        function openProfile(){ document.getElementById('profileModal').classList.add('open'); document.body.style.overflow = 'hidden'; }
+        function closeProfile(){ document.getElementById('profileModal').classList.remove('open'); document.body.style.overflow = ''; }
+
+        function captureLocation(button){
+            const form = button?.closest('form') || document.querySelector('#page-submit form');
+            if(!navigator.geolocation){
+                showToast('Geolocation is unavailable. Enter the address manually.', 'error');
+                return;
+            }
+            if(!window.isSecureContext){
+                showToast('Device location requires HTTPS, or localhost during development. Enter the address manually.', 'error');
+                return;
+            }
+            navigator.geolocation.getCurrentPosition(function(pos){
+                const lat = pos.coords.latitude;
+                const lng = pos.coords.longitude;
+                setReportCoordinates(form, lat, lng);
+                showToast('Location captured. Looking up the address...', 'success');
+            }, function(err){
+                let message = 'Unable to capture device location.';
+                if(err.code === 1) message = 'Location permission was denied. Allow location access in browser settings or enter the address manually.';
+                if(err.code === 2) message = 'Your device could not determine its location. Enter the address manually.';
+                if(err.code === 3) message = 'Location request timed out. Try again or enter the address manually.';
+                showToast(message, 'error');
+            }, {enableHighAccuracy:true, timeout:15000, maximumAge:60000});
+        }
+
+        function setReportCoordinates(form, lat, lng){
+            if(!form) return;
+            const latitudeInput = form.querySelector('input[name="latitude"]');
+            const longitudeInput = form.querySelector('input[name="longitude"]');
+            const locationInput = form.querySelector('input[name="location"]');
+            if(latitudeInput) latitudeInput.value = lat;
+            if(longitudeInput) longitudeInput.value = lng;
+
+            const mapId = form.id === 'quickReportForm' ? 'quickReportLocationMap' : 'reportLocationMap';
+            const mapEntry = window.reportLocationMaps?.[mapId];
+            const point = {lat: Number(lat), lng: Number(lng)};
+            if(mapEntry){
+                mapEntry.map.setCenter(point);
+                mapEntry.map.setZoom(17);
+                mapEntry.marker.setPosition(point);
+                mapEntry.marker.setVisible(true);
+                mapEntry.status.textContent = 'Looking up address...';
+            }
+
+            if(locationInput) locationInput.value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+            const coordinateText = locationInput?.value;
+            reverseGeocodeLocation(lat, lng).then(function(address){
+                if(!address) throw new Error('Address lookup failed');
+                if(locationInput && locationInput.value === coordinateText) locationInput.value = address;
+                if(mapEntry) mapEntry.status.textContent = address;
+            }).catch(function(){
+                if(mapEntry) mapEntry.status.textContent = 'Location set. Address lookup is unavailable; enter the address manually.';
+                showToast('Address lookup is unavailable. Coordinates were saved; you can enter the address manually.', 'error');
+            });
+        }
+
+        function reverseGeocodeLocation(lat, lng){
+            if(!window.google?.maps) return Promise.reject(new Error('Google Maps is unavailable'));
+            const geocoder = new google.maps.Geocoder();
+            return geocoder.geocode({location: {lat: Number(lat), lng: Number(lng)}})
+                .then(function(result){ return result.results?.[0]?.formatted_address || ''; });
+        }
+
+        function initializeReportLocationMap(formId, mapId, statusId){
+            const form = document.getElementById(formId);
+            const mapElement = document.getElementById(mapId);
+            const status = document.getElementById(statusId);
+            if(!form || !mapElement || !status) return;
+            if(!window.google?.maps){ status.textContent = 'Google Maps could not load. Check the API key and enabled APIs.'; return; }
+
+            const map = new google.maps.Map(mapElement, {
+                center: {lat: 12.8797, lng: 121.7740},
+                zoom: 6,
+                mapTypeControl: false,
+                streetViewControl: false
+            });
+            const marker = new google.maps.Marker({
+                map: map,
+                position: {lat: 12.8797, lng: 121.7740},
+                draggable: true,
+                visible: false
+            });
+            status.textContent = 'Click the map to set the report location.';
+            window.reportLocationMaps = window.reportLocationMaps || {};
+            window.reportLocationMaps[mapId] = {map: map, marker: marker, status: status};
+
+            function updateLocation(point){
+                setReportCoordinates(form, point.lat, point.lng);
+            }
+            map.addListener('click', function(event){
+                if(event.latLng) updateLocation({lat: event.latLng.lat(), lng: event.latLng.lng()});
+            });
+            marker.addListener('dragend', function(){
+                const position = marker.getPosition();
+                if(position) updateLocation({lat: position.lat(), lng: position.lng()});
+            });
+        }
+
+        window.initGoogleReportLocationMaps = function(){
+            initializeReportLocationMap('page-submit', 'reportLocationMap', 'reportLocationMapStatus');
+            initializeReportLocationMap('quickReportForm', 'quickReportLocationMap', 'quickReportLocationMapStatus');
+        };
+        window.handleGoogleReportMapsLoadError = function(){
+            ['reportLocationMapStatus', 'quickReportLocationMapStatus'].forEach(function(id){
+                const status = document.getElementById(id);
+                if(status) status.textContent = 'Google Maps failed to load. Check the key restrictions and enabled APIs.';
+            });
+        };
+        window.resizeGoogleReportMap = function(mapId){
+            const mapEntry = window.reportLocationMaps?.[mapId];
+            if(!mapEntry || !window.google?.maps) return;
+            const center = mapEntry.map.getCenter();
+            google.maps.event.trigger(mapEntry.map, 'resize');
+            if(center) mapEntry.map.setCenter(center);
+        };
+
+        document.getElementById('quickReportForm')?.addEventListener('submit', function(e){
+            e.preventDefault();
+            const form = e.target;
+            const title = form.querySelector('[name="title"]').value.trim();
+            const location = form.querySelector('[name="location"]').value.trim();
+            const description = form.querySelector('[name="description"]').value.trim();
+
+            if(!title || !location || !description){
+                showToast('Please complete title, location, and details.', 'error');
+                return;
+            }
+
+            const fd = new FormData(form);
+            fetch(window.location.pathname, {
+                method: 'POST',
+                headers: {'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest'},
+                body: fd,
+                credentials: 'same-origin'
+            }).then(resp => {
+                return resp.json().catch(() => ({status: resp.ok ? 'ok' : 'error', message: 'Unexpected response'}));
+            }).then(data => {
+                if(data && data.status === 'ok'){
+                    closeQuickReport();
+                    showToast(data.message || 'Report submitted', 'success');
+                    form.reset();
+                } else {
+                    showToast(data.message || 'Failed to submit report.', 'error');
+                }
+            }).catch(() => {
+                showToast('Network error submitting report.', 'error');
+            });
+        });
+        </script>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if google_maps_api_key %}
+<script async src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key|urlencode }}&amp;callback=initGoogleReportLocationMaps&amp;loading=async" onerror="handleGoogleReportMapsLoadError()"></script>
+{% endif %}
+<script src="{% static 'base/script.js' %}"></script>
+{% endblock %}

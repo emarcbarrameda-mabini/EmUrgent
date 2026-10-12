@@ -1,0 +1,51 @@
+[07/May/2026 13:47:24] "GET / HTTP/1.1" 200 56764
+[07/May/2026 13:47:24,378] - Broken pipe from ('127.0.0.1', 54488)
+[07/May/2026 13:47:39] "GET / HTTP/1.1" 200 56764
+[07/May/2026 13:47:39,926] - Broken pipe from ('127.0.0.1', 54490)
+[07/May/2026 13:47:58] "GET /home/?page=home HTTP/1.1" 200 102135
+[07/May/2026 13:47:58] "GET /static/base/style.css?v=resident-tycoon-20260507-2 HTTP/1.1" 200 149307
+[07/May/2026 13:48:10] "GET /reports/my/fragment/ HTTP/1.1" 200 10209
+[07/May/2026 13:48:34] "GET /reports/my/fragment/ HTTP/1.1" 200 10209
+[07/May/2026 13:48:58] "POST /logout/ HTTP/1.1" 302 0
+[07/May/2026 13:48:58] "GET / HTTP/1.1" 200 56764
+[07/May/2026 13:49:09] "POST / HTTP/1.1" 302 0
+[07/May/2026 13:49:10] "GET /home/ HTTP/1.1" 200 102135
+[07/May/2026 13:49:21] "GET /reports/my/fragment/ HTTP/1.1" 200 10209
+[07/May/2026 13:49:35] "POST /logout/ HTTP/1.1" 302 0
+[07/May/2026 13:49:35] "GET / HTTP/1.1" 200 56764
+[07/May/2026 13:49:42] "POST / HTTP/1.1" 302 0
+[07/May/2026 13:49:42] "GET /barangay-admin-dashboard/ HTTP/1.1" 200 160665
+[07/May/2026 13:56:11] "GET / HTTP/1.1" 200 56764
+[07/May/2026 13:56:11,903] - Broken pipe from ('127.0.0.1', 51261)
+[07/May/2026 13:56:12] "POST /logout/ HTTP/1.1" 302 0
+[07/May/2026 13:56:12] "GET / HTTP/1.1" 200 56764
+[07/May/2026 13:56:12] "GET /static/base/style.css?v=resident-tycoon-20260507-2 HTTP/1.1" 200 159390
+[07/May/2026 13:56:18] "POST / HTTP/1.1" 302 0
+[07/May/2026 13:56:18] "GET /home/ HTTP/1.1" 200 102135
+[07/May/2026 13:56:32] "GET /static/base/style.css?v=admin-tycoon-20260507-1 HTTP/1.1" 200 159390
+[07/May/2026 13:56:32,393] - Broken pipe from ('127.0.0.1', 63679)
+[07/May/2026 13:56:47] "GET /reports/my/fragment/ HTTP/1.1" 200 10209
+[07/May/2026 13:59:59] "GET /static/base/style.css?v=admin-tycoon-20260507-1 HTTP/1.1" 200 159390
+[07/May/2026 13:59:59,873] - Broken pipe from ('127.0.0.1', 57926)
+[07/May/2026 14:00:19] "GET /static/base/style.css?v=admin-tycoon-20260507-1 HTTP/1.1" 200 159390
+[07/May/2026 14:00:19,193] - Broken pipe from ('127.0.0.1', 57931)
+[07/May/2026 14:01:32] "GET /home/?page=home HTTP/1.1" 200 102135
+[07/May/2026 14:01:32] "GET /static/base/style.css?v=resident-tycoon-20260507-2 HTTP/1.1" 304 0
+[07/May/2026 14:01:34] "POST /logout/ HTTP/1.1" 302 0
+[07/May/2026 14:01:34] "GET / HTTP/1.1" 200 56764
+[07/May/2026 14:01:40] "POST / HTTP/1.1" 302 0
+[07/May/2026 14:01:40] "GET /barangay-admin-dashboard/ HTTP/1.1" 200 160665
+[07/May/2026 14:03:04] "GET / HTTP/1.1" 200 56764
+[07/May/2026 14:03:04,541] - Broken pipe from ('127.0.0.1', 58416)
+[07/May/2026 14:04:19] "GET / HTTP/1.1" 302 0
+[07/May/2026 14:04:19] "GET /barangay-admin-dashboard/ HTTP/1.1" 200 160665
+[07/May/2026 14:04:20] "GET /static/base/style.css?v=resident-tycoon-20260507-2 HTTP/1.1" 304 0
+[07/May/2026 14:06:03] "POST /logout/ HTTP/1.1" 302 0
+[07/May/2026 14:06:03] "GET / HTTP/1.1" 200 56764
+[07/May/2026 14:06:03] "GET /static/base/style.css?v=resident-tycoon-20260507-2 HTTP/1.1" 304 0
+[07/May/2026 14:06:13] "POST / HTTP/1.1" 302 0
+[07/May/2026 14:06:13] "GET /home/ HTTP/1.1" 200 102135
+[07/May/2026 14:06:44] "GET /static/base/style.css?v=admin-tycoon-20260507-1 HTTP/1.1" 200 159390
+[07/May/2026 14:06:45,069] - Broken pipe from ('127.0.0.1', 51917)
+[07/May/2026 14:07:01] "GET /barangay-admin-dashboard/ HTTP/1.1" 302 0
+[07/May/2026 14:07:02,078] - Broken pipe from ('127.0.0.1', 51918)

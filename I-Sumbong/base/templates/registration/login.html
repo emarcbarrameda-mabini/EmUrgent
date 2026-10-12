@@ -1,0 +1,9 @@
+{% extends 'base/base.html' %}
+
+{% block main_class %}main-content auth-main{% endblock %}
+{% block wrapper_class %}auth-page-wrapper{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+    {% include 'base/_auth_panel.html' with login_form=form register_form=register_form auth_mode=auth_mode %}
+{% endblock %}

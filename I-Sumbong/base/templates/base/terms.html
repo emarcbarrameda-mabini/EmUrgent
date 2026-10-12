@@ -1,0 +1,38 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Terms and Conditions - i-Sumbong{% endblock %}
+
+{% block content %}
+<div class="auth-card" style="max-width: 760px;">
+    <div class="text-center">
+        <h2>Terms and Conditions</h2>
+        <p>Please read these terms before using i-Sumbong</p>
+    </div>
+
+    <div style="margin-top: 12px; color: #334155; line-height: 1.7; font-size: 14px;">
+        <p><strong>1. Purpose of Service</strong></p>
+        <p>i-Sumbong allows community members to submit reports about public issues for awareness and coordination.</p>
+
+        <p><strong>2. Account Responsibility</strong></p>
+        <p>You are responsible for the information submitted through your account and for maintaining account security.</p>
+
+        <p><strong>3. Accurate Reporting</strong></p>
+        <p>Only submit truthful and relevant reports. Misleading, abusive, or harmful content is not allowed.</p>
+
+        <p><strong>4. Media Uploads</strong></p>
+        <p>By uploading photos, you confirm you have the right to share them and that they do not violate privacy or law.</p>
+
+        <p><strong>5. Platform Moderation</strong></p>
+        <p>Administrators may update report status or remove reports that violate policies.</p>
+
+        <p><strong>6. Changes</strong></p>
+        <p>These terms may be updated to improve service quality and compliance requirements.</p>
+    </div>
+
+    <div class="text-center" style="margin-top: 18px;">
+        <a href="{% url 'register' %}" class="btn-modern btn-login" style="display: inline-block; width: auto; padding: 10px 20px; text-decoration: none;">
+            Back to Register
+        </a>
+    </div>
+</div>
+{% endblock %}

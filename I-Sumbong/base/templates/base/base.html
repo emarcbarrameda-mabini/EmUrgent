@@ -1,0 +1,358 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}i-Sumbong{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'base/style.css' %}?v=location-map-20260930-1">
+    <script>
+        function getCookie(name) {
+            const value = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+            return value ? decodeURIComponent(value.pop()) : '';
+        }
+        window.getCookie = window.getCookie || getCookie;
+    </script>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% block sidebar %}{% endblock %}
+    <div class="page-wrapper">
+        <main class="{% block main_class %}main-content{% endblock %}">
+            {% block full_content %}
+            <div class="container">
+                <div class="{% block wrapper_class %}content-wrapper{% endblock %}">
+                    {% block content %}
+                    {% endblock %}
+                </div>
+            </div>
+            {% endblock %}
+        </main>
+
+        {% block footer %}
+        <footer class="footer-modern">
+            <div class="container">
+                <p>&copy; 2026 i-Sumbong. Helping the community for a clearer future.</p>
+            </div>
+        </footer>
+        {% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Loading Spinner -->
+    <div class="spinner-overlay" id="spinnerOverlay"></div>
+    <div class="loading-spinner" id="loadingSpinner">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Proof Lightbox Modal -->
+    <div class="lightbox-overlay" id="proofLightbox" role="dialog" aria-hidden="true" aria-label="Proof preview">
+        <div class="lightbox-card" role="document">
+            <div class="lightbox-header">
+                <h3 id="proofLightboxTitle">Proof Preview</h3>
+                <button class="lightbox-close" id="proofLightboxClose" aria-label="Close preview">&times;</button>
+            </div>
+            <div class="lightbox-body">
+                <img src="" alt="Proof image" id="proofLightboxImage" class="proof-preview-image">
+                <div class="lightbox-caption" id="proofLightboxCaption"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulletin / Memorandum Modal (shared) -->
+    <div class="modal-overlay" id="viewBulletinModal" aria-hidden="true">
+        <div class="modal-box modal-wide">
+            <div class="modal-header">
+                <h3 id="viewBulletinTitle"></h3>
+                <button class="modal-close" id="viewBulletinClose" aria-label="Close"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div id="viewBulletinContent" class="modal-content-copy"></div>
+                <div id="viewBulletinGallery" class="modal-gallery"></div>
+                <div class="modal-meta" id="viewBulletinMeta"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" id="viewBulletinCloseBtn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Preview Modal -->
+    <div class="modal-overlay" id="emailPreviewModal" aria-hidden="true">
+        <div class="modal-card modal-wide" role="document">
+            <div class="modal-header">
+                <h3 id="emailPreviewTitle">Email Preview</h3>
+                <button class="modal-close" id="emailPreviewClose" aria-label="Close preview">&times;</button>
+            </div>
+            <div class="email-preview-body">
+                <div class="email-preview-subject"><strong>Subject:</strong> <span id="emailPreviewSubject"></span></div>
+                <pre id="emailPreviewBody" class="email-preview-text"></pre>
+                <div class="email-preview-actions">
+                    <button id="emailResendBtn" class="admin-filter-btn">Resend Email</button>
+                    <button id="emailCloseBtn" class="btn-cancel">Close</button>
+                </div>
+            </div>
+        </div>
+            {% comment %} Shared admin modals included for admin pages {% endcomment %}
+            {% include 'base/_admin_modals.html' %}
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const forms = document.querySelectorAll('form');
+            forms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    // Skip modal forms (edit/delete)
+                    if (this.closest('.modal-overlay')) return;
+                    if (this.checkValidity() === false) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return;
+                    }
+                    const spinner = document.getElementById('loadingSpinner');
+                    const overlay = document.getElementById('spinnerOverlay');
+                    if (spinner && overlay) {
+                        spinner.classList.add('active');
+                        overlay.classList.add('active');
+                    }
+                });
+            });
+
+            window.addEventListener('load', function() {
+                const spinner = document.getElementById('loadingSpinner');
+                const overlay = document.getElementById('spinnerOverlay');
+                if (spinner && overlay) {
+                    setTimeout(function() {
+                        spinner.classList.remove('active');
+                        overlay.classList.remove('active');
+                    }, 500);
+                }
+            });
+        
+            // Accessible sidebar: set aria-current on active link and enable arrow-key navigation
+            (function(){
+                const navLinks = document.querySelectorAll('.admin-nav .admin-nav-link');
+                if(!navLinks || !navLinks.length) return;
+                navLinks.forEach((a, idx) => {
+                    // ensure focusable and ARIA defaults
+                    if(!a.hasAttribute('tabindex')) a.setAttribute('tabindex','0');
+                    a.setAttribute('aria-current', a.classList.contains('active') ? 'page' : 'false');
+                    a.addEventListener('click', function(){
+                        navLinks.forEach(x=> x.setAttribute('aria-current','false'));
+                        this.setAttribute('aria-current','page');
+                    });
+                    a.addEventListener('keydown', function(e){
+                        if(e.key === 'ArrowDown' || e.key === 'ArrowRight'){
+                            e.preventDefault();
+                            const next = navLinks[idx+1] || navLinks[0]; next.focus();
+                        } else if(e.key === 'ArrowUp' || e.key === 'ArrowLeft'){
+                            e.preventDefault();
+                            const prev = navLinks[idx-1] || navLinks[navLinks.length-1]; prev.focus();
+                        }
+                    });
+                });
+            })();
+        });
+    </script>
+
+    <script>
+        // Shared utilities for all pages
+        function getCookie(name){
+            const v=document.cookie.match('(^|;)\\s*'+name+'\\s*=\\s*([^;]+)');
+            return v?v.pop():'';
+        }
+
+        function showToast(message, type){
+            const id = 'toast-'+Date.now();
+            const el = document.createElement('div');
+            el.id = id;
+            el.className = 'toast '+(type||'info');
+            el.textContent = message;
+            // base styling is in CSS; add visually-moving classes for animations
+            el.classList.add('fade-in');
+            // accessibility
+            el.setAttribute('role','status');
+            el.setAttribute('aria-live','polite');
+            el.setAttribute('aria-atomic','true');
+            el.setAttribute('tabindex','-1');
+            el.setAttribute('data-toast-type', type || 'info');
+            document.body.appendChild(el);
+            // ensure screen readers announce
+            const sr = document.createElement('span');
+            sr.className = 'sr-only';
+            sr.textContent = message;
+            el.appendChild(sr);
+            // fade-in then fade-out
+            requestAnimationFrame(()=> el.classList.add('fade-in'));
+            const displayMs = 3500;
+            const removeMs = 450;
+            setTimeout(()=>{
+                el.classList.remove('fade-in');
+                el.classList.add('fade-out');
+                el.setAttribute('aria-hidden','true');
+                setTimeout(()=> el.remove(), removeMs);
+            }, displayMs);
+        }
+    </script>
+
+    <script>
+        // Attach gallery behavior site-wide: apply layout classes and lightbox click
+        document.addEventListener('DOMContentLoaded', function(){
+            document.querySelectorAll('.media-gallery').forEach(function(g){
+                const imgs = g.querySelectorAll('img.media-item');
+                const count = imgs.length;
+                g.classList.add('media-'+Math.min(count||0,4));
+                if(count>4) g.classList.add('media-many');
+                imgs.forEach(function(img){
+                    img.addEventListener('click', function(){
+                        const src = img.getAttribute('data-full-url') || img.src;
+                        const box = document.getElementById('proofLightbox');
+                        if(box){
+                            document.getElementById('proofLightboxImage').src = src;
+                            document.getElementById('proofLightboxTitle').textContent = img.alt || '';
+                            document.getElementById('proofLightboxCaption').textContent = img.alt || '';
+                            box.setAttribute('aria-hidden','false'); box.style.display = 'block';
+                        }
+                    });
+                });
+            });
+            const close = document.getElementById('proofLightboxClose');
+            if(close) close.addEventListener('click', function(){ const box = document.getElementById('proofLightbox'); box.setAttribute('aria-hidden','true'); box.style.display = 'none'; document.getElementById('proofLightboxImage').src=''; });
+            // Bulletin modal open handler (for memorandums)
+            document.querySelectorAll('.open-bulletin-modal').forEach(function(btn){
+                btn.addEventListener('click', function(){
+                    const card = btn.closest('.bulletin-card');
+                    if(!card) return;
+                    const title = card.querySelector('.bulletin-card-title')?.textContent || '';
+                    const content = card.querySelector('.bulletin-card-content')?.textContent || '';
+                    const meta = card.querySelector('.bulletin-card-meta')?.innerText || '';
+                    const gallery = card.querySelector('.media-gallery');
+                    const modal = document.getElementById('viewBulletinModal');
+                    document.getElementById('viewBulletinTitle').textContent = title;
+                    document.getElementById('viewBulletinContent').textContent = content;
+                    document.getElementById('viewBulletinMeta').textContent = meta;
+                    const g = document.getElementById('viewBulletinGallery');
+                    g.innerHTML = '';
+                    if(gallery){
+                        gallery.querySelectorAll('img.media-item').forEach(function(img){
+                            const el = document.createElement('img');
+                            el.src = img.getAttribute('data-full-url') || img.src;
+                            el.style.width = '100%'; el.style.borderRadius = '8px'; el.style.objectFit='cover';
+                            el.addEventListener('click', function(){
+                                // open lightbox for larger view
+                                const box = document.getElementById('proofLightbox');
+                                document.getElementById('proofLightboxImage').src = el.src;
+                                document.getElementById('proofLightboxTitle').textContent = title;
+                                box.setAttribute('aria-hidden','false'); box.style.display='block';
+                            });
+                            g.appendChild(el);
+                        });
+                    }
+                    modal.setAttribute('aria-hidden','false'); modal.classList.add('open'); document.body.style.overflow='hidden';
+                });
+            });
+            // close bulletin modal
+            document.getElementById('viewBulletinClose')?.addEventListener('click', function(){ const m = document.getElementById('viewBulletinModal'); m.setAttribute('aria-hidden','true'); m.classList.remove('open'); document.body.style.overflow=''; });
+            document.getElementById('viewBulletinCloseBtn')?.addEventListener('click', function(){ const m = document.getElementById('viewBulletinModal'); m.setAttribute('aria-hidden','true'); m.classList.remove('open'); document.body.style.overflow=''; });
+        });
+    </script>
+
+    <script>
+        // Generic AJAX form handler for forms marked with class "ajax-form".
+        document.addEventListener('submit', async function(e){
+            const form = e.target;
+            if(!form || !form.classList || !form.classList.contains('ajax-form')) return;
+            e.preventDefault();
+            const url = form.getAttribute('action') || window.location.pathname;
+            const fd = new FormData(form);
+            const spinner = document.getElementById('loadingSpinner');
+            const overlay = document.getElementById('spinnerOverlay');
+            if(spinner && overlay){ spinner.classList.add('active'); overlay.classList.add('active'); }
+            try{
+                const res = await fetch(url, {
+                    method: form.method || 'POST',
+                    headers: {'X-CSRFToken': getCookie('csrftoken'), 'X-Requested-With': 'XMLHttpRequest'},
+                    body: fd,
+                    credentials: 'same-origin'
+                });
+                const data = await res.json().catch(()=> ({}));
+                if(data && data.status === 'ok'){
+                    showToast(data.message || 'Done', 'success');
+                    // handle common partial updates
+                    if(data.bulletin_id){
+                        // remove deleted bulletin rows
+                        const inputs = document.querySelectorAll('input[name="bulletin_id"][value="'+data.bulletin_id+'"]');
+                        inputs.forEach(i=>{ const tr = i.closest('tr'); if(tr) tr.remove(); });
+                    }
+                        if(data.assignee_id && data.report_id){
+                            // update assignee select for the report row
+                            const row = document.getElementById('row-'+data.report_id);
+                            if(row){
+                                const sel = row.querySelector('select[name="assignee_id"]');
+                                if(sel){ sel.value = data.assignee_id; }
+                            }
+                        }
+                    if(typeof data.is_pinned !== 'undefined' && data.bulletin_id){
+                        // update pin UI
+                        const rows = document.querySelectorAll('input[name="bulletin_id"][value="'+data.bulletin_id+'"]');
+                        rows.forEach(i=>{
+                            const tr = i.closest('tr');
+                            if(!tr) return;
+                            const btn = tr.querySelector('form input[name="bulletin_id"][value="'+data.bulletin_id+'"]')?.closest('form')?.querySelector('button');
+                            if(btn) btn.textContent = data.is_pinned ? ' Unpin' : ' Pin';
+                            const badge = tr.querySelector('.bulletin-badge-pin');
+                            if(data.is_pinned && !badge){
+                                const span = document.createElement('span'); span.className='bulletin-badge bulletin-badge-pin'; span.innerHTML='<i class="fas fa-thumbtack"></i> Pinned';
+                                tr.querySelector('.admin-bulletin-title')?.appendChild(span);
+                            } else if(!data.is_pinned && badge){ badge.remove(); }
+                        });
+                    }
+                    if(data.user_id){
+                        // demote: remove admin row
+                        const rows = document.querySelectorAll('input[name="user_id"][value="'+data.user_id+'"]');
+                        rows.forEach(i=>{ const tr = i.closest('tr'); if(tr) tr.remove(); });
+                    }
+                    if(data.profile_id){
+                        // approved/rejected profile: remove pending row
+                        const rows = document.querySelectorAll('input[name="profile_id"][value="'+data.profile_id+'"]');
+                        rows.forEach(i=>{ const tr = i.closest('tr'); if(tr) tr.remove(); });
+                    }
+                    if(data.report_id && data.new_status){
+                        const row = document.getElementById('row-'+data.report_id);
+                        if(row){ const sel = row.querySelector('select[name="status"]'); if(sel) sel.value = data.new_status; }
+                    }
+                    // try to reset the form when applicable
+                    try{ form.reset(); }catch(_){ }
+                } else {
+                    showToast((data && data.message) || 'Server returned an error', 'error');
+                }
+            }catch(err){
+                showToast('Network error', 'error');
+            }finally{
+                if(spinner && overlay){ spinner.classList.remove('active'); overlay.classList.remove('active'); }
+            }
+        });
+
+        // Generic modal open/close helpers used by admin UI
+        function openDemoteModal(id, username){
+            document.getElementById('demoteUserId').value = id;
+            document.getElementById('demoteUsername').textContent = username;
+            document.getElementById('demoteConfirmModal')?.classList.add('open'); document.body.style.overflow='hidden';
+        }
+        function closeDemoteModal(){ document.getElementById('demoteConfirmModal')?.classList.remove('open'); document.body.style.overflow=''; }
+        function openPromoteModal(){ document.getElementById('promoteModal')?.classList.add('open'); document.body.style.overflow='hidden'; }
+        function closePromoteModal(){ document.getElementById('promoteModal')?.classList.remove('open'); document.body.style.overflow=''; }
+        function openCreateBulletin(){ document.getElementById('createBulletinModal')?.classList.add('open'); document.body.style.overflow='hidden'; }
+        function closeCreateBulletin(){ document.getElementById('createBulletinModal')?.classList.remove('open'); document.body.style.overflow=''; }
+        function openValidationQuick(){ document.getElementById('validationQuickModal')?.classList.add('open'); document.body.style.overflow='hidden'; }
+        function closeValidationQuick(){ document.getElementById('validationQuickModal')?.classList.remove('open'); document.body.style.overflow=''; }
+        function closeViewModal(){ document.getElementById('viewModal')?.classList.remove('open'); document.body.style.overflow=''; }
+        function openAdminDeleteModal(id, title){ document.getElementById('adminDeleteBulletinId').value = id; document.getElementById('adminDeleteTarget').textContent = title; document.getElementById('adminDeleteModal')?.classList.add('open'); document.body.style.overflow='hidden'; }
+        function closeAdminDeleteModal(){ document.getElementById('adminDeleteModal')?.classList.remove('open'); document.body.style.overflow=''; }
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,65 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Waiting for Approval - i-Sumbong{% endblock %}
+
+{% block content %}
+<div class="auth-card review-card">
+    <div class="text-center">
+        <i class="fas fa-hourglass-half auth-status-icon auth-warning-icon"></i>
+        <h2>Account Review in Progress</h2>
+        <p>Please wait for your barangay admin to accept your account before accessing the community dashboard.</p>
+    </div>
+
+    <div class="review-status-card">
+        <p><strong>Status:</strong> {{ community_profile.get_status_display|default:'Pending' }}</p>
+        {% if community_profile %}
+            <p><strong>Barangay:</strong> {{ community_profile.barangay.name }}</p>
+            <p><strong>Address:</strong> {{ community_profile.address }}</p>
+        {% endif %}
+    </div>
+
+    {% if community_profile and community_profile.status == 'rejected' %}
+    <div class="review-rejected-card">
+        <strong>Your account was declined by barangay admin.</strong>
+        {% if community_profile.review_notes %}
+            <p><strong>Reject Reason:</strong> {{ community_profile.review_notes }}</p>
+        {% endif %}
+    </div>
+
+    <div class="review-resubmit-card">
+        <h3>Resubmit Proof of Residency</h3>
+        <p>Update your details and upload a new proof for review.</p>
+
+        <form method="post" action="{% url 'resubmit_proof' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="field-label">Address</label>
+                <input type="text" name="address" class="form-input" value="{{ community_profile.address }}" required>
+            </div>
+            <div class="form-group">
+                <label class="field-label">Barangay</label>
+                <select name="barangay" class="form-input" required>
+                    {% for b in barangays %}
+                        <option value="{{ b.id }}" {% if community_profile.barangay.id == b.id %}selected{% endif %}>{{ b.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="field-label">New Proof of Residency</label>
+                <input type="file" name="proof_of_residency" class="form-input" accept="image/*" required>
+            </div>
+            <div class="form-action-row">
+                <button type="submit" class="btn-modern btn-login">Submit for Revalidation</button>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+
+    <div class="auth-footer">
+        <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-modern btn-danger">Logout</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

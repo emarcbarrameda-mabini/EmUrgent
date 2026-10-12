@@ -1,0 +1,79 @@
+{% if my_reports %}
+    {% for report in my_reports %}
+        {% if report.user == user %}
+            <div class="report-card" id="report-card-{{ report.id }}">
+                <div class="report-card-status status-bar-{{ report.status }}">
+                    {% if report.status == 'pending' %}
+                        <i class="fas fa-clock"></i> Pending
+                    {% elif report.status == 'in_progress' %}
+                        <i class="fas fa-spinner fa-spin"></i> In Progress
+                    {% else %}
+                        <i class="fas fa-check-circle"></i> Resolved
+                    {% endif %}
+                </div>
+
+                <div class="report-card-body">
+                    <div class="report-card-top">
+                        <div>
+                            <h4 class="report-card-title">
+                                <a href="{% url 'report_detail' report.id %}">{{ report.title }}</a>
+                            </h4>
+                            <div class="report-card-meta">
+                                <span><i class="fas fa-map-marker-alt"></i> {{ report.location }}</span>
+                                <span><i class="fas fa-clock"></i> {{ report.created_at|timesince }} ago</span>
+                            </div>
+                        </div>
+
+                        <div class="report-card-actions">
+                            <button class="btn-edit"
+                                data-id="{{ report.id }}"
+                                data-title="{{ report.title|escapejs }}"
+                                data-location="{{ report.location|escapejs }}"
+                                data-priority="{{ report.priority }}"
+                                data-description="{{ report.description|escapejs }}"
+                                title="Edit">
+                                <i class="fas fa-pen"></i>
+                            </button>
+                            <button class="btn-delete"
+                                data-id="{{ report.id }}"
+                                data-title="{{ report.title|escapejs }}"
+                                title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <p class="report-card-desc">{{ report.description }}</p>
+
+                    {% if report.display_image_urls %}
+                        <div class="media-gallery">
+                            {% for image_url in report.display_image_urls %}
+                                <img src="{{ image_url }}" alt="{{ report.title }}" class="media-item" data-full-url="{{ image_url }}">
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <div class="report-card-footer">
+                        {% if report.priority == 'high' %}
+                            <span class="priority-badge priority-high"><i class="fas fa-exclamation-circle"></i> Urgent</span>
+                        {% elif report.priority == 'medium' %}
+                            <span class="priority-badge priority-medium"><i class="fas fa-minus-circle"></i> Medium</span>
+                        {% else %}
+                            <span class="priority-badge priority-low"><i class="fas fa-arrow-circle-down"></i> Low</span>
+                        {% endif %}
+
+                        <a href="{% url 'report_detail' report.id %}" class="btn-small report-card-link">View Details</a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% endfor %}
+{% else %}
+    <div class="empty-state report-empty-state">
+        <i class="fas fa-inbox"></i>
+        <p>You have no reports yet.</p>
+        <button type="button" class="btn-modern btn-login report-empty-action" onclick="showPage('submit')">
+            <i class="fas fa-plus" style="margin-right: 6px;"></i> Report Issue
+        </button>
+    </div>
+{% endif %}
