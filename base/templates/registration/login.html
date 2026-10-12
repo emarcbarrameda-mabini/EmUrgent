@@ -1,0 +1,78 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+<div class="auth-card">
+    <div class="text-center">
+        <h1 style="font-size: 32px; font-weight: 700; margin-bottom: 8px; background: linear-gradient(135deg, #2563eb, #1e40af); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">I-Sumbong</h1>
+        <h2>Welcome Back</h2>
+        <p>Enter your details to sign in</p>
+    </div>
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+        
+        {% if form.non_field_errors %}
+            <div class="errorlist">
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% for field in form %}
+            {% if field.name == 'username' %}
+                <div class="form-group">
+                    <div class="input-field-wrapper">
+                        <i class="fas fa-user input-icon"></i>
+                        {{ field }}
+                    </div>
+                    {% if field.errors %}
+                        <ul class="errorlist">
+                            {% for error in field.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            {% elif field.name == 'password' %}
+                <div class="form-group">
+                    <div class="input-field-wrapper">
+                        <i class="fas fa-lock input-icon"></i>
+                        {{ field }}
+                    </div>
+                    <div class="form-helper">
+                        <a href="{% url 'password_reset' %}" class="forgot-password-link">Forgot password?</a>
+                    </div>
+                    {% if field.errors %}
+                        <ul class="errorlist">
+                            {% for error in field.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="form-group">
+                    {{ field }}
+                    {% if field.errors %}
+                        <ul class="errorlist">
+                            {% for error in field.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% endfor %}
+
+        <button type="submit" class="btn-modern btn-login" style="margin-top: 12px;">
+            Log In
+        </button>
+    </form>
+
+    <div class="text-center" style="margin-top: 12px;">
+        <p class="small" style="color: #9ca3af; margin: 0 0 8px 0;">Don't have an account?</p>
+        <a href="{% url 'register' %}" class="auth-link">Create Account</a>
+    </div>
+</div>
+{% endblock %}
